@@ -1,0 +1,20 @@
+{
+  "name": "seul",
+  "version": "0.2.0",
+  "description": "A task runner for monorepos.",
+  "author": "Mehdi Golchin",
+  "license": "MIT",
+  "bin": "seul.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MehdiGolchin/seul.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MehdiGolchin/seul/issues"
+  },
+  "scripts": {
+    "test": "jest",
+    "build:watch": "cp package.json dist && tsc --watch",
+    "build": "rm -rf dist && mkdir dist && cp package.json dist/ && tsc"
+  }
+}
