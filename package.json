@@ -13,9 +13,10 @@
     "url": "https://github.com/MehdiGolchin/seul/issues"
   },
   "scripts": {
-    "test": "jest",
-    "build:watch": "cp package.json dist && tsc --watch",
-    "build": "rm -rf dist && mkdir dist && cp package.json dist/ && tsc"
+    "clean": "rm -rf dist",
+    "prebuild": "yarn clean && mkdir dist && cp package.json dist/",
+    "build": "yarn prebuild && tsc",
+    "build:watch": "yarn prebuild && tsc --watch"
   },
   "devDependencies": {
     "@types/node": "^8.10.11",
