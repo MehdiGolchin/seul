@@ -16,5 +16,9 @@
     "test": "jest",
     "build:watch": "cp package.json dist && tsc --watch",
     "build": "rm -rf dist && mkdir dist && cp package.json dist/ && tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^8.10.11",
+    "typescript": "^2.8.3"
   }
 }

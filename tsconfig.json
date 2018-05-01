@@ -1,0 +1,13 @@
+{
+   "compilerOptions": {
+      "target": "es2015", /* Uses ES6 */
+      "module": "commonjs",
+      "declaration": true, /* Generates .d.ts files */
+      "sourceMap": true, /* Generates source map for debugging */
+      "outDir": "./dist", /* Puts the output in the dist dir */
+      "strict": true,
+   },
+   "exclude": [
+      "node_modules"
+   ]
+}
