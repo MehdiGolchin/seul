@@ -1,63 +1,66 @@
-import { ICommand, CommandExecutor } from '../src/command';
+    import {RunCommandOptions} from '../src/command';
+    import {CommandExecutorBuilder} from "./builder";
 
-describe('CommandExecutor', () => {
+    describe('CommandExecutor Class', () => {
 
-    describe('exec', () => {
+        describe('exec Method', () => {
 
-        test('should execute a simple command', () => {
-            // arrange
-            const test = new TestCommand()
-            const executor = new CommandExecutor(test)
+            test('should execute a command', () => {
+                // arrange
+                const expected = 'OK';
 
-            // act
-            const actual = executor.exec('test')
+                const executor = new CommandExecutorBuilder()
+                    .registerCommand('test', () => Promise.resolve(expected))
+                    .build();
 
-            // assert
-            expect(actual).toBe(true)
-            expect(test.run).toBeCalled()
-        })
+                // act
+                const promise = executor.exec('test');
 
-        test('should return false if command does not exist', () => {
-            // arrange
-            const executor = new CommandExecutor()
+                // assert
+                expect(promise).resolves.toBe(expected);
+            });
 
-            // act
-            const actual = executor.exec('test')
+            test('should reject promise when command does not exist', () => {
+                // arrange
+                const executor = new CommandExecutorBuilder().build();
 
-            // assert
-            expect(actual).toBe(false)
-        })
+                // act
+                const promise = executor.exec('test');
 
-        test('should pass the extra parameters to the command', () => {
-            // arrange
-            const test = new TestCommand()
-            const executor = new CommandExecutor(test)
+                // assert
+                expect(promise).rejects.toEqual(expect.objectContaining({
+                    message: "Unsupported command 'test'."
+                }));
+            });
 
-            // act
-            const actual = executor.exec('test', '123')
+            test('should pass the parameters to the command', () => {
+                // arrange
+                const executor = new CommandExecutorBuilder()
+                    .registerCommand('test', (p: RunCommandOptions) => Promise.resolve(p.params))
+                    .build();
 
-            // assert
-            expect(actual).toBe(true)
-            expect(test.run).toBeCalledWith('123')
-        })
+                // act
+                const promise = executor.exec('test', '123');
 
-        test('should return false if no parameter passed', () => {
-            // arrange
-            const test = new TestCommand()
-            const executor = new CommandExecutor(test)
+                // assert
+                expect(promise).resolves.toEqual(['123']);
+            });
 
-            // act
-            const actual = executor.exec()
+            test('should reject promise when command throws error', () => {
+                // arrange
+                const error = new Error('An error!');
 
-            // assert
-            expect(actual).toBe(false)
-        })
+                const executor = new CommandExecutorBuilder()
+                    .registerCommand('test', () => { throw error })
+                    .build();
 
-    })
+                // act
+                const promise = executor.exec('test');
 
-})
+                // assert
+                expect(promise).rejects.toEqual(error);
+            });
 
-class TestCommand implements ICommand {
-    name = 'test'
-    run = jest.fn()
-}
+        });
+
+    });

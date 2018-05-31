@@ -1,32 +1,54 @@
+import { Repository } from "./repository";
+import { Log } from "./log";
 
-export interface ICommand {
-    name: string
-    run(...params: string[]): void
+export interface RunCommandOptions {
+    readonly repository: Repository;
+    readonly log: Log;
+    readonly params: string[];
 }
 
-export interface ICommandExecutor {
-    exec(...args: string[]): boolean
+export interface CommandCreator {
+    new(): Command;
 }
 
-export class CommandExecutor implements ICommandExecutor {
+export interface Command {
+    readonly name: string
+    run(options: RunCommandOptions): Promise<any>
+}
 
-    private readonly commands: { [name: string]: ICommand }
+export interface CommandExecutor {
+    exec(...args: string[]): Promise<any>
+}
 
-    constructor(...commands: ICommand[]) {
+export class DefaultCommandExecutor implements CommandExecutor {
+
+    private readonly commands: { [name: string]: Command };
+
+    constructor(
+        readonly repository: Repository,
+        readonly log: Log,
+        ...commands: CommandCreator[]
+    ) {
         this.commands = commands.reduce(
-            (p, c) => ({ ...p, [c.name]: c }), {}
-        );
+            (prev, ctor) => {
+                const cmd = new ctor();
+                return { ...prev, [cmd.name]: cmd };
+            }, {});
     }
 
-    exec(...args: string[]): boolean {
+    async exec(...args: string[]) {
         const name = args[0];
         const command = this.commands[name];
-        const params = args.slice(1)
+        const params = args.slice(1);
 
-        if (!command) return false;
-        command.run(...params);
+        if (!command) throw new Error(`Unsupported command '${name}'.`);
 
-        return true;
+        const options: RunCommandOptions = {
+            repository: this.repository,
+            log: this.log,
+            params: params
+        };
+        return command.run(options);
     }
 
 }
