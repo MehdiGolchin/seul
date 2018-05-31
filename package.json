@@ -17,12 +17,13 @@
     "prebuild": "yarn clean && mkdir dist && cp package.json dist/",
     "build": "yarn prebuild && tsc",
     "build:watch": "yarn prebuild && tsc --watch",
-    "test": "jest",
+    "test": "jest --coverage --coverageReporters=text-lcov | coveralls",
     "test:watch": "jest --watch"
   },
   "devDependencies": {
     "@types/jest": "^22.2.3",
     "@types/node": "^8.10.11",
+    "coveralls": "^3.0.1",
     "jest": "^22.4.3",
     "ts-jest": "^22.4.4",
     "tslint": "^5.10.0",
