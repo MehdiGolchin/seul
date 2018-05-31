@@ -1,4 +1,4 @@
-# Seul ![Build Status](https://circleci.com/gh/MehdiGolchin/seul.png?circle-token=:circle-token)
+# Seul [![Build Status](https://circleci.com/gh/MehdiGolchin/seul.png?circle-token=:circle-token)](https://circleci.com/gh/MehdiGolchin/seul)
 
 [![Coverage Status](https://coveralls.io/repos/github/MehdiGolchin/seul/badge.svg?branch=master)](https://coveralls.io/github/MehdiGolchin/seul?branch=master)
 
