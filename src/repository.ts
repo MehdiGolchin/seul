@@ -24,6 +24,10 @@ export class Package {
 
 }
 
+export interface RepositoryOptions {
+    readonly packagesDir: string;
+}
+
 export interface Repository {
     readonly root: string;
     allPackages(): Promise<Package[]>;
@@ -31,10 +35,13 @@ export interface Repository {
 
 export class DefaultRepository implements Repository {
 
-    constructor(readonly root: string) { }
+    constructor(
+        readonly root: string, 
+        readonly options: RepositoryOptions = { packagesDir: 'packages' }
+    ) { }
 
     async allPackages() {
-        const fullPath = path.join(this.root, 'packages');
+        const fullPath = path.join(this.root, this.options.packagesDir);
         const paths = await this.readDirectory(fullPath);
         const packages: Package[] = [];
         for (let p of paths) {
@@ -49,6 +56,7 @@ export class DefaultRepository implements Repository {
     private isDirectory(fullPath: string) {
         return new Promise<boolean>((resolve, reject) => {
             fs.stat(fullPath, (err, stat) => {
+                /* istanbul ignore if */
                 if (err) {
                     return reject(err);
                 }

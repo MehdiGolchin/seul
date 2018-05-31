@@ -58,6 +58,10 @@ function readdir(path: string, callback: CallbackFunc<string[] | null>) {
     const searchResult = entries
         .filter(e => e.path.startsWith(`${path}/`))
         .map(e => basename(e.path));
+    
+    if (!searchResult.length) {
+        callback(new Error('Directory does not exist.'), []);
+    }
 
     callback(null, searchResult);
 }
