@@ -17,8 +17,9 @@
     "prebuild": "yarn clean && mkdir dist && cp package.json dist/",
     "build": "yarn prebuild && tsc",
     "build:watch": "yarn prebuild && tsc --watch",
-    "test": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "test:watch": "jest --watch"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --coverageReporters=text-lcov | coveralls"
   },
   "devDependencies": {
     "@types/jest": "^22.2.3",
