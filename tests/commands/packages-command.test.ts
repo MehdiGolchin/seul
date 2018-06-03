@@ -1,16 +1,16 @@
-import { LogBuilder, RepositoryBuilder } from "../builder";
-import { PackagesCommand } from "../../src/commands/packages-command";
 import { RunCommandOptions } from "../../src/command";
+import { PackagesCommand } from "../../src/commands/packages-command";
+import { LogBuilder, RepositoryBuilder } from "../builder";
 
-describe('PackagesCommand', () => {
+describe("PackagesCommand", () => {
 
-    describe('run', () => {
+    describe("run", () => {
 
-        test('should print a list of packages', async () => {
+        test("should print a list of packages", async () => {
             // arrange
             const repoBuilder = new RepositoryBuilder()
-                .addPackage('alpha', '1.0.0')
-                .addPackage('beta', '2.0.0');
+                .addPackage("alpha", "1.0.0")
+                .addPackage("beta", "2.0.0");
 
             const logBuilder = new LogBuilder()
                 .setWrite(jest.fn());
@@ -18,7 +18,7 @@ describe('PackagesCommand', () => {
             const options: RunCommandOptions = {
                 repository: repoBuilder.build(),
                 log: logBuilder.build(),
-                params: []
+                params: [],
             };
 
             const command = new PackagesCommand();
@@ -28,15 +28,15 @@ describe('PackagesCommand', () => {
 
             // assert
             expect(options.log.write).toHaveBeenCalledWith(
-                '- alpha v1.0.0 (/packages/alpha)\n- beta v2.0.0 (/packages/beta)'
+                "- alpha v1.0.0 (/packages/alpha)\n- beta v2.0.0 (/packages/beta)",
             );
         });
 
-        test('should ignore a package without descriptor', async () => {
+        test("should ignore a package without descriptor", async () => {
             // arrange
             const repoBuilder = new RepositoryBuilder()
-                .addPackage('alpha', '1.0.0')
-                .addPackageWithoutDescriptor('foo');
+                .addPackage("alpha", "1.0.0")
+                .addPackageWithoutDescriptor("foo");
 
             const logBuilder = new LogBuilder()
                 .setWrite(jest.fn());
@@ -44,7 +44,7 @@ describe('PackagesCommand', () => {
             const options: RunCommandOptions = {
                 repository: repoBuilder.build(),
                 log: logBuilder.build(),
-                params: []
+                params: [],
             };
 
             const command = new PackagesCommand();
@@ -54,7 +54,7 @@ describe('PackagesCommand', () => {
 
             // assert
             expect(options.log.write).toHaveBeenCalledWith(
-                '- alpha v1.0.0 (/packages/alpha)'
+                "- alpha v1.0.0 (/packages/alpha)",
             );
         });
 

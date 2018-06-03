@@ -10,7 +10,8 @@
    },
    "exclude": [
       "node_modules",
-      "test",
-      "dist"
+      "tests",
+      "dist",
+      "__mocks__"
    ]
 }

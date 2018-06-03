@@ -1,6 +1,7 @@
+import { Command, CommandCreator, DefaultCommandExecutor, RunCommandOptions } from "../src/command";
 import { Log } from "../src/log";
-import { Command, RunCommandOptions, DefaultCommandExecutor, CommandCreator } from "../src/command";
-import { Package, Repository } from "../src/repository";
+import { Package } from "../src/package";
+import { Repository } from "../src/repository";
 
 export class RepositoryBuilder {
 
@@ -8,23 +9,23 @@ export class RepositoryBuilder {
 
     addPackage(name: string, version: string): RepositoryBuilder {
         this.packages.push({
-            path: `/packages/${name}`,
-            getDescriptor: () => Promise.resolve({ name, version })
+            root: `/packages/${name}`,
+            getDescriptor: () => Promise.resolve({ name, version }),
         });
         return this;
     }
 
     addPackageWithoutDescriptor(name: string): RepositoryBuilder {
         this.packages.push({
-            path: `/packages/${name}`,
-            getDescriptor: () => Promise.reject(new Error('File does not exist.'))
+            root: `/packages/${name}`,
+            getDescriptor: () => Promise.reject(new Error("File does not exist.")),
         });
         return this;
     }
 
     build(): Repository {
         const repo: Repository = {
-            root: '/',
+            root: "/",
             allPackages: () => Promise.resolve(this.packages)
         };
         return repo;
@@ -34,8 +35,9 @@ export class RepositoryBuilder {
 
 export type LogFunc = (message: string) => void;
 
-export const DefaultLogFunc: LogFunc = _ => { };
+export const DefaultLogFunc: LogFunc = () => true;
 
+// tslint:disable-next-line:max-classes-per-file
 export class LogBuilder {
 
     private write: LogFunc = DefaultLogFunc;
@@ -47,7 +49,7 @@ export class LogBuilder {
 
     build(): Log {
         const log: Log = {
-            write: this.write
+            write: this.write,
         };
 
         return log;
@@ -57,12 +59,14 @@ export class LogBuilder {
 
 export type CommandRunFunc = (options: RunCommandOptions) => Promise<any>;
 
+// tslint:disable-next-line:max-classes-per-file
 export class CommandExecutorBuilder {
 
     private commands: CommandCreator[] = [];
 
     registerCommand(name: string, run: CommandRunFunc) {
-        class DummyCommand implements Command { name = name; run = run }
+        // tslint:disable-next-line:max-classes-per-file
+        class DummyCommand implements Command { name = name; run = run; }
         this.commands.push(DummyCommand);
         return this;
     }
@@ -71,7 +75,7 @@ export class CommandExecutorBuilder {
         return new DefaultCommandExecutor(
             {} as Repository,
             {} as Log,
-            ...this.commands
+            ...this.commands,
         );
     }
 

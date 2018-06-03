@@ -1,24 +1,24 @@
-import { Command, RunCommandOptions } from '../command';
-import { Package, PackageDescriptor } from '../repository';
+import { Command, RunCommandOptions } from "../command";
+import { Package, PackageDescriptor } from "../package";
 
 export class PackagesCommand implements Command {
 
-    name = 'packages';
+    name = "packages";
 
     async run({ repository, log }: RunCommandOptions) {
         const packages = await repository.allPackages();
         const outputs = await Promise.all(
-            packages.map((pkg: Package) => this.generateText(pkg))
+            packages.map((pkg: Package) => this.generateText(pkg)),
         );
-        log.write(outputs.filter(e => e.trim() != '').join('\n'));
+        log.write(outputs.filter((e) => e.trim() !== "").join("\n"));
     }
 
     private async generateText(pkg: Package) {
         try {
-            let descriptor = await pkg.getDescriptor();
-            return `- ${descriptor.name} v${descriptor.version} (${pkg.path})`;
+            const descriptor = await pkg.getDescriptor();
+            return `- ${descriptor.name} v${descriptor.version} (${pkg.root})`;
         } catch (ex) {
-            return '';
+            return "";
         }
     }
 

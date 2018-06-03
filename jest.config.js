@@ -1,7 +1,4 @@
 module.exports = {
-  "roots": [
-    "<rootDir>/test"
-  ],
   "transform": {
     "^.+\\.tsx?$": "ts-jest"
   },
@@ -14,5 +11,7 @@ module.exports = {
     "json",
     "node"
   ],
-  "collectCoverage": true
+  "collectCoverage": true,
+  "automock": false,
+  "clearMocks": true
 };
