@@ -2,12 +2,19 @@ import * as fs from "fs";
 import * as path from "path";
 import { Package } from "./package";
 
+export interface Script {
+    [key: string]: string | string[];
+}
+
 export interface RepositoryOptions {
     readonly packagesDir: string;
+    readonly scripts?: Script;
+    readonly [key: string]: any;
 }
 
 export interface Repository {
     readonly root: string;
+    readonly options: RepositoryOptions;
     allPackages(): Promise<Package[]>;
 }
 

@@ -1,47 +1,37 @@
 import * as cp from "child_process";
-import { Script } from "vm";
-
-export interface ScriptOutput {
-    readonly stdout: string;
-    readonly stderr: string;
-}
+import { Log } from "./log";
 
 export interface ScriptRunner {
-    exec(...commands: string[]): Promise<ScriptOutput[]>;
+    exec(commands: string | string[]): Promise<any[]>;
 }
 
 export class DefaultScriptRunner implements ScriptRunner {
 
-    async exec(...commands: string[]): Promise<ScriptOutput[]> {
-        const output: ScriptOutput[] = [];
-        for (const cmd of commands) {
-            try {
-                output.push(await this.execCommand(cmd));
-            } catch (ex) {
-                throw new ScriptExecError(output, ex.message);
-            }
+    constructor(readonly log: Log) { }
+
+    exec(commands: string | string[]): Promise<any[]> {
+        if (Array.isArray(commands)) {
+            const promises = commands.map((c) => this.execCommand(c));
+            return Promise.all(promises);
+        } else {
+            return this.execCommand(commands);
         }
-        return output;
     }
 
-    private execCommand(command: string): Promise<ScriptOutput> {
-        return new Promise<ScriptOutput>((resolve, reject) => {
+    private execCommand(command: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             cp.exec(command, {}, (err, stdout, stderr) => {
                 if (err) {
-                    reject(err);
+                    return reject(err);
                 }
-                resolve({ stdout, stderr });
+                if (stdout) {
+                    this.log.write(stdout);
+                } else {
+                    this.log.error(stderr);
+                }
+                resolve();
             });
         });
-    }
-
-}
-
-// tslint:disable-next-line:max-classes-per-file
-export class ScriptExecError extends Error {
-
-    constructor(readonly output: ScriptOutput[], message?: string | undefined) {
-        super(message);
     }
 
 }

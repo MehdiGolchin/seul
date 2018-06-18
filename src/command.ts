@@ -1,9 +1,7 @@
-import { Log } from "./log";
-import { Repository } from "./repository";
+import { ServiceProvider } from "./service";
 
 export interface RunCommandOptions {
-    readonly repository: Repository;
-    readonly log: Log;
+    readonly services: ServiceProvider;
     readonly params: string[];
 }
 
@@ -25,9 +23,8 @@ export class DefaultCommandExecutor implements CommandExecutor {
     private readonly commands: { [name: string]: Command };
 
     constructor(
-        readonly repository: Repository,
-        readonly log: Log,
-        ...commands: CommandCreator[],
+        readonly services: ServiceProvider,
+        ...commands: CommandCreator[]
     ) {
         this.commands = commands.reduce(
             (prev, ctor) => {
@@ -46,8 +43,7 @@ export class DefaultCommandExecutor implements CommandExecutor {
         }
 
         const options: RunCommandOptions = {
-            repository: this.repository,
-            log: this.log,
+            services: this.services,
             params,
         };
         return command.run(options);

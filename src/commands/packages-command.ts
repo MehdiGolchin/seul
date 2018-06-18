@@ -1,11 +1,15 @@
 import { Command, RunCommandOptions } from "../command";
+import { Log } from "../log";
 import { Package, PackageDescriptor } from "../package";
+import { Repository } from "../repository";
 
 export class PackagesCommand implements Command {
 
     name = "packages";
 
-    async run({ repository, log }: RunCommandOptions) {
+    async run({ services }: RunCommandOptions) {
+        const repository = services.getService<Repository>("repository");
+        const log = services.getService<Log>("log");
         const packages = await repository.allPackages();
         const outputs = await Promise.all(
             packages.map((pkg: Package) => this.generateText(pkg)),
