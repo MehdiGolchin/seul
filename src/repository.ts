@@ -27,6 +27,9 @@ export class DefaultRepository implements Repository {
 
     async allPackages() {
         const fullPath = path.join(this.root, this.options.packagesDir);
+        if (!(await this.exists(fullPath))) {
+            throw new Error("Packages not found.");
+        }
         const paths = await this.readDirectory(fullPath);
         const packages: Package[] = [];
         for (const p of paths) {
@@ -57,6 +60,14 @@ export class DefaultRepository implements Repository {
                     return reject(err);
                 }
                 resolve(paths);
+            });
+        });
+    }
+
+    private exists(fullpath: string) {
+        return new Promise<boolean>((resolve) => {
+            fs.exists(fullpath, (exists) => {
+                resolve(exists);
             });
         });
     }

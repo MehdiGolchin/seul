@@ -27,15 +27,20 @@ describe("DefaultRepository Class", () => {
             ]);
         });
 
-        it("should ignore directories without package descriptor", () => {
+        it("should throw error when packages directory does not exist", async () => {
             // arrange
             const repository = new DefaultRepository("/");
 
             // act
-            const promise = repository.allPackages();
+            let error: Error = null;
+            try {
+                await repository.allPackages();
+            } catch (ex) {
+                error = ex;
+            }
 
             // assert
-            expect(promise).rejects.toThrow("Directory does not exist.");
+            expect(error.message).toEqual("Packages not found.");
         });
 
     });

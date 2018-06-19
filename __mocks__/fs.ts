@@ -3,6 +3,7 @@ import { basename } from "path";
 const fs: any = jest.genMockFromModule("fs");
 
 type CallbackFunc<T> = (this: void, err: Error | null, result: T) => void;
+type CallbackWithoutErrorFunc<T> = (this: void, result: T) => void;
 
 enum EntryKind {
     directory,
@@ -85,6 +86,13 @@ function stat(path: string, callback: CallbackFunc<Stats | null>) {
     }
 }
 
+function exists(path: string, callback: CallbackWithoutErrorFunc<boolean>) {
+    const len = entries
+        .filter((e) => e.path.startsWith(path))
+        .length;
+    callback(len > 1);
+}
+
 fs.__clear = __clear;
 fs.__mkdir = __mkdir;
 fs.__writeFile = __writeFile;
@@ -92,5 +100,6 @@ fs.__writeJson = __writeJson;
 fs.readdir = readdir;
 fs.readFile = readFile;
 fs.stat = stat;
+fs.exists = exists;
 
 module.exports = fs;
