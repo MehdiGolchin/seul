@@ -6,12 +6,13 @@ export interface Log {
 export class ConsoleLog implements Log {
 
     error(message: string): void {
-        throw new Error("Method not implemented.");
+        // tslint:disable-next-line:no-console
+        console.log(message);
     }
 
     write(message: string): void {
         // tslint:disable-next-line:no-console
         console.log(message);
     }
-    
+
 }
