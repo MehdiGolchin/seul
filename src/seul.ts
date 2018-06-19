@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { DefaultCommandExecutor } from "./command";
-import { PackagesCommand } from "./commands/packages-command";
+import { PackagesCommand, RunCommand } from "./commands";
 import { ConsoleLog, Log } from "./log";
 import { DefaultRepository } from "./repository";
 import { DefaultScriptRunner } from "./script";
@@ -19,6 +19,7 @@ const services = new DefaultServiceProvider()
 const executor = new DefaultCommandExecutor(
     services,
     PackagesCommand,
+    RunCommand,
 );
 
 executor.exec(...params)
