@@ -8,21 +8,22 @@ export class RunCommand implements Command {
     name = "run";
 
     async run({ services, params }: RunCommandOptions): Promise<any> {
-        const { allPackages, options } = services.getService<Repository>("repository");
-        const { error } = services.getService<Log>("log");
-        const scriptName = params[0];
-        if (!options.scripts) {
-            return error("scripts not found.");
-        }
+        const repository = services.getService<Repository>("repository");
+        const log = services.getService<Log>("log");
         const scriptRunner = services.getService<ScriptRunner>("script");
-        const packages = await allPackages();
-        const scripts = options.scripts[scriptName];
+
+        const scriptName = params[0];
+        const descriptor = await repository.getDescriptor();
+        if (!descriptor.scripts) {
+            return log.error("Please define your scripts in packages.json file.");
+        }
+
+        const scripts = descriptor.scripts[scriptName];
         if (!scripts) {
-            return error(`${scriptName} not found.`);
+            return log.error(`'${scriptName}' not defined.`);
         }
-        for (const pkg of packages) {
-            await scriptRunner.exec(scripts);
-        }
+
+        await scriptRunner.exec(scripts);
     }
 
 }

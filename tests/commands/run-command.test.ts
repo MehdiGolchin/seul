@@ -1,109 +1,128 @@
-import { RunCommandOptions } from "../../src/command";
 import { RunCommand } from "../../src/commands/run-command";
-import { Log } from "../../src/log";
-import { RepositoryOptions } from "../../src/repository";
+import { InMemoryLog } from "../../src/log";
+import { RepositoryDescriptor } from "../../src/repository";
 import { DefaultServiceProvider } from "../../src/service";
-import { ExecFunc, LogBuilder, RepositoryBuilder, ScriptRunnerBuilder } from "../builders";
+import { DummyScriptRunner, RepositoryBuilder } from "../builders";
 
 describe("RunCommand Class", () => {
 
-    it("should run script", async () => {
+    it("should run a single script", async () => {
         // arrange
-        const exec = jest.fn().mockImplementation(() => Promise.resolve([]));
-        const log = new LogBuilder().build();
-        const services = setupServices({
+        const descriptor: RepositoryDescriptor = {
+            packagesDir: "packages",
             scripts: {
-                foo: "foo1",
+                install: "yarn install",
             },
-        }, exec, log);
-        const options: RunCommandOptions = {
-            services,
-            params: ["foo"],
         };
 
+        const repository = new RepositoryBuilder("/repo")
+            .addPackage("alpha", "1.0.0")
+            .setOptions(descriptor)
+            .build();
+
+        const scriptRunner = new DummyScriptRunner();
+
+        const services = new DefaultServiceProvider()
+            .addSingleton("script", scriptRunner)
+            .addSingleton("repository", repository);
+
         // act
-        await new RunCommand().run(options);
+        await new RunCommand().run({
+            services,
+            params: ["install"],
+        });
 
         // assert
-        expect(exec).toHaveBeenCalledTimes(2);
-        expect(exec).toBeCalledWith("foo1");
+        expect(scriptRunner.log).toEqual(["yarn install"]);
     });
 
-    it("should run all scripts", async () => {
+    it("should run an array of scripts", async () => {
         // arrange
-        const exec = jest.fn().mockImplementation(() => Promise.resolve([]));
-        const log = new LogBuilder().build();
-        const services = setupServices({
+        const descriptor: RepositoryDescriptor = {
+            packagesDir: "packages",
             scripts: {
-                foo: ["foo1", "foo2"],
+                test: ["yarn build", "jest"],
             },
-        }, exec, log);
-        const options: RunCommandOptions = {
-            services,
-            params: ["foo"],
         };
 
+        const repository = new RepositoryBuilder("/repo")
+            .addPackage("alpha", "1.0.0")
+            .setOptions(descriptor)
+            .build();
+
+        const scriptRunner = new DummyScriptRunner();
+
+        const services = new DefaultServiceProvider()
+            .addSingleton("script", scriptRunner)
+            .addSingleton("repository", repository);
+
         // act
-        await new RunCommand().run(options);
+        await new RunCommand().run({
+            services,
+            params: ["test"],
+        });
 
         // assert
-        expect(exec).toHaveBeenCalledTimes(2);
-        expect(exec).toBeCalledWith(["foo1", "foo2"]);
+        expect(scriptRunner.log).toEqual(["yarn build", "jest"]);
     });
 
     it("should show error when scripts property does not exist", async () => {
         // arrange
-        const error = jest.fn();
-        const log = new LogBuilder().setError(error).build();
-        const services = setupServices({}, jest.fn(), log);
-        const options: RunCommandOptions = {
-            services,
-            params: ["foo"],
+        const descriptor: RepositoryDescriptor = {
+            packagesDir: "packages",
         };
 
+        const repository = new RepositoryBuilder("/repo")
+            .addPackage("alpha", "1.0.0")
+            .setOptions(descriptor)
+            .build();
+
+        const log = new InMemoryLog();
+
+        const services = new DefaultServiceProvider()
+            .addSingleton("script", new DummyScriptRunner())
+            .addSingleton("repository", repository)
+            .addSingleton("log", log);
+
         // act
-        await new RunCommand().run(options);
+        await new RunCommand().run({
+            services,
+            params: ["test"],
+        });
 
         // assert
-        expect(error).toHaveBeenCalledWith("scripts not found.");
+        expect(log.errors).toEqual(["Please define your scripts in packages.json file."]);
     });
 
     it("should show error when specific script does not exist", async () => {
         // arrange
-        const error = jest.fn();
-        const log = new LogBuilder().setError(error).build();
-        const services = setupServices({
+        const descriptor: RepositoryDescriptor = {
+            packagesDir: "packages",
             scripts: {
-                something: "foo",
+                install: "yarn install",
             },
-        }, jest.fn(), log);
-        const options: RunCommandOptions = {
-            services,
-            params: ["foo"],
         };
 
-        // act
-        await new RunCommand().run(options);
-
-        // assert
-        expect(error).toHaveBeenCalledWith(`foo not found.`);
-    });
-
-    function setupServices(options: Partial<RepositoryOptions>, exec: ExecFunc, log: Log) {
-        const scriptRunner = new ScriptRunnerBuilder()
-            .implementExec(exec)
-            .build();
-
-        const repository = new RepositoryBuilder()
+        const repository = new RepositoryBuilder("/repo")
             .addPackage("alpha", "1.0.0")
-            .addPackage("beta", "1.0.0")
-            .setOptions(options)
+            .setOptions(descriptor)
             .build();
 
-        return new DefaultServiceProvider()
-            .addSingleton("script", scriptRunner)
+        const log = new InMemoryLog();
+
+        const services = new DefaultServiceProvider()
+            .addSingleton("script", new DummyScriptRunner())
             .addSingleton("repository", repository)
             .addSingleton("log", log);
-    }
+
+        // act
+        await new RunCommand().run({
+            services,
+            params: ["test"],
+        });
+
+        // assert
+        expect(log.errors).toEqual(["'test' not defined."]);
+    });
 
 });

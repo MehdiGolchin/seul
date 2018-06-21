@@ -1,6 +1,6 @@
 import { Command, RunCommandOptions } from "../command";
 import { Log } from "../log";
-import { Package, PackageDescriptor } from "../package";
+import { Package } from "../package";
 import { Repository } from "../repository";
 
 export class PackagesCommand implements Command {
@@ -10,19 +10,20 @@ export class PackagesCommand implements Command {
     async run({ services }: RunCommandOptions) {
         const repository = services.getService<Repository>("repository");
         const log = services.getService<Log>("log");
+
         const packages = await repository.allPackages();
-        const outputs = await Promise.all(
-            packages.map((pkg: Package) => this.generateText(pkg)),
+
+        await Promise.all(
+            packages.map((pkg: Package) => this.writeInfo(pkg, log)),
         );
-        log.write(outputs.filter((e) => e.trim() !== "").join("\n"));
     }
 
-    private async generateText(pkg: Package) {
+    private async writeInfo(pkg: Package, log: Log) {
         try {
             const descriptor = await pkg.getDescriptor();
-            return `- ${descriptor.name} v${descriptor.version} (${pkg.root})`;
+            log.write(`- ${descriptor.name} v${descriptor.version} (${pkg.root})`);
         } catch (ex) {
-            return "";
+            log.error(`- '${pkg.root}' contains no package.json file.`);
         }
     }
 

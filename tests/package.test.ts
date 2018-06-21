@@ -42,6 +42,4 @@ describe("Package Class", () => {
 
 });
 
-afterEach(() => {
-    fs.__clear();
-});
+afterEach(fs.__clear);

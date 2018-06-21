@@ -6,7 +6,7 @@ export interface Script {
     [key: string]: string | string[];
 }
 
-export interface RepositoryOptions {
+export interface RepositoryDescriptor {
     readonly packagesDir: string;
     readonly scripts?: Script;
     readonly [key: string]: any;
@@ -14,22 +14,48 @@ export interface RepositoryOptions {
 
 export interface Repository {
     readonly root: string;
-    readonly options: RepositoryOptions;
+    readonly initialOptions: RepositoryDescriptor;
     allPackages(): Promise<Package[]>;
+    getDescriptor(): Promise<RepositoryDescriptor>;
 }
 
 export class DefaultRepository implements Repository {
 
+    private cachedDescriptor: RepositoryDescriptor | null = null;
+
     constructor(
         readonly root: string,
-        readonly options: RepositoryOptions = { packagesDir: "packages" },
+        readonly initialOptions: RepositoryDescriptor = { packagesDir: "packages" },
     ) { }
 
+    async getDescriptor(): Promise<RepositoryDescriptor> {
+        if (this.cachedDescriptor) {
+            return this.cachedDescriptor;
+        }
+
+        const fullPath = path.join(this.root, "packages.json");
+
+        try {
+            const descriptor = await this.readJson(fullPath);
+
+            return this.cachedDescriptor = {
+                ...this.initialOptions,
+                ...descriptor,
+            };
+        } catch (ex) {
+            return this.initialOptions;
+        }
+    }
+
     async allPackages() {
-        const fullPath = path.join(this.root, this.options.packagesDir);
-        if (!(await this.exists(fullPath))) {
+        const descriptor = await this.getDescriptor();
+        const fullPath = path.join(this.root, descriptor.packagesDir);
+
+        const packagesExists = await this.exists(fullPath);
+        if (!packagesExists) {
             throw new Error("Packages not found.");
         }
+
         const paths = await this.readDirectory(fullPath);
         const packages: Package[] = [];
         for (const p of paths) {
@@ -68,6 +94,18 @@ export class DefaultRepository implements Repository {
         return new Promise<boolean>((resolve) => {
             fs.exists(fullpath, (exists) => {
                 resolve(exists);
+            });
+        });
+    }
+
+    private readJson<T>(fullPath: string): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            fs.readFile(fullPath, "utf8", (err: Error, data: string) => {
+                if (err) {
+                    return reject(err);
+                }
+                const json = JSON.parse(data) as T;
+                resolve(json);
             });
         });
     }

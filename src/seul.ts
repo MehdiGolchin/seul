@@ -2,7 +2,7 @@
 import { DefaultCommandExecutor } from "./command";
 import { PackagesCommand, RunCommand } from "./commands";
 import { ConsoleLog, Log } from "./log";
-import { DefaultRepository } from "./repository";
+import { DefaultRepository, Repository } from "./repository";
 import { DefaultScriptRunner } from "./script";
 import { DefaultServiceProvider, ServiceProvider } from "./service";
 
@@ -13,7 +13,10 @@ const services = new DefaultServiceProvider()
     .addSingleton("repository", new DefaultRepository(cwd))
     .addSingleton("log", new ConsoleLog())
     .addSingleton("script",
-        (provider: ServiceProvider) => new DefaultScriptRunner(provider.getService<Log>("log")),
+        (provider: ServiceProvider) => new DefaultScriptRunner(
+            provider.getService<Repository>("repository"),
+            provider.getService<Log>("log"),
+        ),
     );
 
 const executor = new DefaultCommandExecutor(

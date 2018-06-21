@@ -1,20 +1,18 @@
 import { ScriptRunner } from "../../src/script";
 
-export type ExecFunc = (...commands: string[]) => Promise<any[]>;
+export class DummyScriptRunner implements ScriptRunner {
 
-export class ScriptRunnerBuilder {
+    log: string[] = [];
 
-    private execFunc: ExecFunc = null;
-
-    implementExec(fn: ExecFunc): ScriptRunnerBuilder {
-        this.execFunc = fn;
-        return this;
-    }
-
-    build(): ScriptRunner {
-        return {
-            exec: this.execFunc,
-        };
+    exec(commands: string | string[]): Promise<any> {
+        return new Promise<any>((resolve) => {
+            if (Array.isArray(commands)) {
+                this.log = [...this.log, ...commands];
+            } else {
+                this.log.push(commands);
+            }
+            resolve();
+        });
     }
 
 }

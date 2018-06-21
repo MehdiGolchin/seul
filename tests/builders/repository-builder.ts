@@ -1,15 +1,17 @@
-import { Command, CommandCreator, DefaultCommandExecutor, RunCommandOptions } from "../../src/command";
+import * as path from "path";
 import { Package } from "../../src/package";
-import { Repository, RepositoryOptions } from "../../src/repository";
+import { Repository, RepositoryDescriptor } from "../../src/repository";
 
 export class RepositoryBuilder {
 
     private readonly packages: Package[] = [];
-    private options: RepositoryOptions = { packagesDir: "packages" };
+    private options: RepositoryDescriptor = { packagesDir: "packages" };
+
+    constructor(readonly root: string = "/") { }
 
     addPackage(name: string, version: string): RepositoryBuilder {
         this.packages.push({
-            root: `/packages/${name}`,
+            root: path.join(this.root, "packages", name),
             getDescriptor: () => Promise.resolve({ name, version }),
         });
         return this;
@@ -17,22 +19,23 @@ export class RepositoryBuilder {
 
     addPackageWithoutDescriptor(name: string): RepositoryBuilder {
         this.packages.push({
-            root: `/packages/${name}`,
+            root: path.join(this.root, "packages", name),
             getDescriptor: () => Promise.reject(new Error("File does not exist.")),
         });
         return this;
     }
 
-    setOptions(properties: Partial<RepositoryOptions>): RepositoryBuilder {
+    setOptions(properties: Partial<RepositoryDescriptor>): RepositoryBuilder {
         this.options = { ...this.options, ...properties };
         return this;
     }
 
     build(): Repository {
         const repo: Repository = {
-            root: "/",
-            options: this.options,
+            root: this.root,
+            initialOptions: this.options,
             allPackages: () => Promise.resolve(this.packages),
+            getDescriptor: () => Promise.resolve(this.options),
         };
         return repo;
     }

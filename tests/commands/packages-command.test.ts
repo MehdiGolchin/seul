@@ -1,22 +1,20 @@
 import { RunCommandOptions } from "../../src/command";
 import { PackagesCommand } from "../../src/commands/packages-command";
-import { Log } from "../../src/log";
+import { InMemoryLog, Log } from "../../src/log";
 import { Repository } from "../../src/repository";
 import { DefaultServiceProvider } from "../../src/service";
-import { LogBuilder, RepositoryBuilder } from "../builders";
+import { RepositoryBuilder } from "../builders";
 
 describe("PackagesCommand", () => {
 
     test("should print a list of packages", async () => {
         // arrange
-        const repository = new RepositoryBuilder()
+        const repository = new RepositoryBuilder("/repo")
             .addPackage("alpha", "1.0.0")
             .addPackage("beta", "2.0.0")
             .build();
 
-        const log = new LogBuilder()
-            .setWrite(jest.fn())
-            .build();
+        const log = new InMemoryLog();
 
         const options = createCommandOptions(repository, log);
 
@@ -24,21 +22,20 @@ describe("PackagesCommand", () => {
         await new PackagesCommand().run(options);
 
         // assert
-        expect(log.write).toHaveBeenCalledWith(
-            "- alpha v1.0.0 (/packages/alpha)\n- beta v2.0.0 (/packages/beta)",
-        );
+        expect(log.info).toEqual([
+            "- alpha v1.0.0 (/repo/packages/alpha)",
+            "- beta v2.0.0 (/repo/packages/beta)",
+        ]);
     });
 
-    test("should ignore a package without descriptor", async () => {
+    test("should show the packages without descriptor", async () => {
         // arrange
-        const repository = new RepositoryBuilder()
+        const repository = new RepositoryBuilder("/repo")
             .addPackage("alpha", "1.0.0")
-            .addPackageWithoutDescriptor("foo")
+            .addPackageWithoutDescriptor("beta")
             .build();
 
-        const log = new LogBuilder()
-            .setWrite(jest.fn())
-            .build();
+        const log = new InMemoryLog();
 
         const options = createCommandOptions(repository, log);
 
@@ -46,9 +43,12 @@ describe("PackagesCommand", () => {
         await new PackagesCommand().run(options);
 
         // assert
-        expect(log.write).toHaveBeenCalledWith(
-            "- alpha v1.0.0 (/packages/alpha)",
-        );
+        expect(log.info).toEqual([
+            "- alpha v1.0.0 (/repo/packages/alpha)",
+        ]);
+        expect(log.errors).toEqual([
+            "- '/repo/packages/beta' contains no package.json file.",
+        ]);
     });
 
     function createCommandOptions(repository: Repository, log: Log, ...params: string[]) {

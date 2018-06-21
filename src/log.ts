@@ -16,3 +16,19 @@ export class ConsoleLog implements Log {
     }
 
 }
+
+// tslint:disable-next-line:max-classes-per-file
+export class InMemoryLog implements Log {
+
+    readonly info: string[] = [];
+    readonly errors: string[] = [];
+
+    write(message: string): void {
+        this.info.push(message);
+    }
+
+    error(message: string): void {
+        this.errors.push(message);
+    }
+
+}

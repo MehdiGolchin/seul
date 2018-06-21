@@ -1,57 +1,78 @@
-// I've put the setupChildProcess in the beginning, because we
-// have to call jest.mock("child_process") before anything else.
-import { LogBuilder, setupChildProcess } from "./builders";
-// tslint:disable-next-line:ordered-imports
+jest.mock("child_process");
+// tslint:disable-next-line:no-var-requires
+const cp = require("child_process");
+
+import { InMemoryLog } from "../src/log";
 import { DefaultScriptRunner } from "../src/script";
+import { RepositoryBuilder } from "./builders";
 
 describe("ScriptRunner Class", () => {
 
     describe("exec", () => {
 
-        it("should execute a command and receive stdout", async () => {
+        test("should execute a command in all packages", async () => {
             // arrange
-            const expected = "Yep! I'm foo";
-            setupChildProcess({ foo: { stdout: expected, stderr: null } });
+            cp.__registerCommand("pwd", (context: any) => {
+                context.write(context.options.cwd);
+            });
 
-            const write = jest.fn();
-            const log = new LogBuilder().setWrite(write).build();
-            const executor = new DefaultScriptRunner(log);
+            const log = new InMemoryLog();
+
+            const repository = new RepositoryBuilder("/repo")
+                .addPackage("alpha", "1.0.0")
+                .addPackage("beta", "1.0.0")
+                .build();
+
+            const executor = new DefaultScriptRunner(repository, log);
+
+            // act
+            await executor.exec("pwd");
+
+            // assert
+            expect(log.info).toEqual([
+                "/repo/packages/alpha",
+                "/repo/packages/beta",
+            ]);
+        });
+
+        it("should execute a command and log the error", async () => {
+            // arrange
+            const expected = "Unknown command.";
+
+            cp.__registerCommand("foo", (context: any) => {
+                context.error(expected);
+            });
+
+            const repository = new RepositoryBuilder()
+                .addPackage("alpha", "1.0.0")
+                .build();
+
+            const log = new InMemoryLog();
+
+            const executor = new DefaultScriptRunner(repository, log);
 
             // act
             await executor.exec("foo");
 
             // assert
-            expect(write).toHaveBeenCalledWith(expected);
+            expect(log.errors).toEqual([expected]);
         });
 
-        it("should execute a command and receive stderr", async () => {
-            // arrange
-            const expected = "No! I'm not foo";
-            setupChildProcess({ foo: { stdout: null, stderr: expected } });
-
-            const error = jest.fn();
-            const log = new LogBuilder().setError(error).build();
-            const executor = new DefaultScriptRunner(log);
-
-            // act
-            const output = await executor.exec("foo");
-
-            // assert
-            expect(error).toHaveBeenCalledWith(expected);
-        });
-
-        it("should reject when something went wrong", async () => {
+        it("should handle error when something went wrong", async () => {
             // arrange
             const expected = new Error("foo has an error");
-            setupChildProcess({ foo: expected });
+            cp.__registerCommand("buggy", () => { throw expected; });
 
-            const log = new LogBuilder().build();
-            const executor = new DefaultScriptRunner(log);
+            const repository = new RepositoryBuilder()
+                .addPackage("alpha", "1.0.0")
+                .build();
+
+            const executor = new DefaultScriptRunner(repository, new InMemoryLog());
 
             // act
             let actual: Error = null;
             try {
-                await executor.exec("foo");
+                await executor.exec("buggy");
             } catch (ex) {
                 actual = ex;
             }
@@ -62,27 +83,29 @@ describe("ScriptRunner Class", () => {
 
         it("should execute a list of scripts", async () => {
             // arrange
-            const first = "I'm foo1";
-            const second = "I'm foo2";
-            setupChildProcess({
-                first: { stdout: first, stderr: null },
-                second: { stdout: second, stderr: null },
-            });
+            cp.__registerCommand("first", (context: any) => context.write("first called"));
+            cp.__registerCommand("second", (context: any) => context.write("second called"));
 
-            const write = jest.fn();
-            const log = new LogBuilder().setWrite(write).build();
-            const executor = new DefaultScriptRunner(log);
+            const repository = new RepositoryBuilder()
+                .addPackage("alpha", "1.0.0")
+                .build();
+
+            const log = new InMemoryLog();
+
+            const executor = new DefaultScriptRunner(repository, log);
 
             // act
             await executor.exec(["first", "second"]);
 
             // assert
-            expect(write.mock.calls).toEqual([
-                [first],
-                [second],
+            expect(log.info).toEqual([
+                "first called",
+                "second called",
             ]);
         });
 
     });
 
 });
+
+afterEach(cp.__clear);
