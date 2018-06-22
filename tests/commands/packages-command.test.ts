@@ -1,7 +1,6 @@
 import { RunCommandOptions } from "../../src/command";
 import { PackagesCommand } from "../../src/commands/packages-command";
 import { InMemoryLog, Log } from "../../src/log";
-import { Repository } from "../../src/repository";
 import { DefaultServiceProvider } from "../../src/service";
 import { RepositoryBuilder } from "../builders";
 
@@ -16,7 +15,14 @@ describe("PackagesCommand", () => {
 
         const log = new InMemoryLog();
 
-        const options = createCommandOptions(repository, log);
+        const services = new DefaultServiceProvider()
+            .addSingleton("repository", repository)
+            .addSingleton("log", log);
+
+        const options: RunCommandOptions = {
+            services,
+            params: [],
+        };
 
         // act
         await new PackagesCommand().run(options);
@@ -37,7 +43,14 @@ describe("PackagesCommand", () => {
 
         const log = new InMemoryLog();
 
-        const options = createCommandOptions(repository, log);
+        const services = new DefaultServiceProvider()
+            .addSingleton("repository", repository)
+            .addSingleton("log", log);
+
+        const options: RunCommandOptions = {
+            services,
+            params: [],
+        };
 
         // act
         await new PackagesCommand().run(options);
@@ -50,18 +63,5 @@ describe("PackagesCommand", () => {
             "- '/repo/packages/beta' contains no package.json file.",
         ]);
     });
-
-    function createCommandOptions(repository: Repository, log: Log, ...params: string[]) {
-        const services = new DefaultServiceProvider()
-            .addSingleton("repository", repository)
-            .addSingleton("log", log);
-
-        const options: RunCommandOptions = {
-            services,
-            params,
-        };
-
-        return options;
-    }
 
 });

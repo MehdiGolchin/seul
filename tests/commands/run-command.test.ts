@@ -6,7 +6,7 @@ import { DummyScriptRunner, RepositoryBuilder } from "../builders";
 
 describe("RunCommand Class", () => {
 
-    it("should run a single script", async () => {
+    test("should run a single script", async () => {
         // arrange
         const descriptor: RepositoryDescriptor = {
             packagesDir: "packages",
@@ -16,7 +16,6 @@ describe("RunCommand Class", () => {
         };
 
         const repository = new RepositoryBuilder("/repo")
-            .addPackage("alpha", "1.0.0")
             .setOptions(descriptor)
             .build();
 
@@ -34,9 +33,10 @@ describe("RunCommand Class", () => {
 
         // assert
         expect(scriptRunner.log).toEqual(["yarn install"]);
+        expect(scriptRunner.packages).toBeUndefined();
     });
 
-    it("should run an array of scripts", async () => {
+    test("should run an array of scripts", async () => {
         // arrange
         const descriptor: RepositoryDescriptor = {
             packagesDir: "packages",
@@ -46,7 +46,6 @@ describe("RunCommand Class", () => {
         };
 
         const repository = new RepositoryBuilder("/repo")
-            .addPackage("alpha", "1.0.0")
             .setOptions(descriptor)
             .build();
 
@@ -64,16 +63,16 @@ describe("RunCommand Class", () => {
 
         // assert
         expect(scriptRunner.log).toEqual(["yarn build", "jest"]);
+        expect(scriptRunner.packages).toBeUndefined();
     });
 
-    it("should show error when scripts property does not exist", async () => {
+    test("should show error when scripts property does not exist", async () => {
         // arrange
         const descriptor: RepositoryDescriptor = {
             packagesDir: "packages",
         };
 
         const repository = new RepositoryBuilder("/repo")
-            .addPackage("alpha", "1.0.0")
             .setOptions(descriptor)
             .build();
 
@@ -94,7 +93,7 @@ describe("RunCommand Class", () => {
         expect(log.errors).toEqual(["Please define your scripts in packages.json file."]);
     });
 
-    it("should show error when specific script does not exist", async () => {
+    test("should show error when specific script does not exist", async () => {
         // arrange
         const descriptor: RepositoryDescriptor = {
             packagesDir: "packages",
@@ -104,7 +103,6 @@ describe("RunCommand Class", () => {
         };
 
         const repository = new RepositoryBuilder("/repo")
-            .addPackage("alpha", "1.0.0")
             .setOptions(descriptor)
             .build();
 
@@ -123,6 +121,38 @@ describe("RunCommand Class", () => {
 
         // assert
         expect(log.errors).toEqual(["'test' not defined."]);
+    });
+
+    test("should run a single command in the specific packages", async () => {
+        // arrange
+        const script = "rm -rf dist";
+
+        const descriptor: RepositoryDescriptor = {
+            packagesDir: "packages",
+            scripts: {
+                clean: script,
+            },
+        };
+
+        const repository = new RepositoryBuilder("/repo")
+            .setOptions(descriptor)
+            .build();
+
+        const scriptRunner = new DummyScriptRunner();
+
+        const services = new DefaultServiceProvider()
+            .addSingleton("script", scriptRunner)
+            .addSingleton("repository", repository);
+
+        // act
+        await new RunCommand().run({
+            services,
+            params: ["clean", "alpha", "gamma"],
+        });
+
+        // assert
+        expect(scriptRunner.log).toEqual([script]);
+        expect(scriptRunner.packages).toEqual(["alpha", "gamma"]);
     });
 
 });

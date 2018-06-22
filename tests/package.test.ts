@@ -8,7 +8,7 @@ describe("Package Class", () => {
 
     describe("getDescriptor", () => {
 
-        it("should return package descriptor", async () => {
+        test("should return package descriptor", async () => {
             // arrange
             const path = "/packages/alpha";
             const expected = {
@@ -26,7 +26,7 @@ describe("Package Class", () => {
             expect(actual).toEqual(expected);
         });
 
-        it("should reject when package descriptor does not exist", () => {
+        test("should reject when package descriptor does not exist", () => {
             // arrange
             const path = "/packages/alpha";
             const pkg = new Package(path);

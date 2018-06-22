@@ -35,7 +35,7 @@ describe("ScriptRunner Class", () => {
             ]);
         });
 
-        it("should execute a command and log the error", async () => {
+        test("should execute a command and log the error", async () => {
             // arrange
             const expected = "Unknown command.";
 
@@ -58,7 +58,7 @@ describe("ScriptRunner Class", () => {
             expect(log.errors).toEqual([expected]);
         });
 
-        it("should handle error when something went wrong", async () => {
+        test("should handle error when something went wrong", async () => {
             // arrange
             const expected = new Error("foo has an error");
             cp.__registerCommand("buggy", () => { throw expected; });
@@ -70,7 +70,7 @@ describe("ScriptRunner Class", () => {
             const executor = new DefaultScriptRunner(repository, new InMemoryLog());
 
             // act
-            let actual: Error = null;
+            let actual: Error | null = null;
             try {
                 await executor.exec("buggy");
             } catch (ex) {
@@ -81,7 +81,7 @@ describe("ScriptRunner Class", () => {
             expect(actual).toEqual(expected);
         });
 
-        it("should execute a list of scripts", async () => {
+        test("should execute a list of scripts", async () => {
             // arrange
             cp.__registerCommand("first", (context: any) => context.write("first called"));
             cp.__registerCommand("second", (context: any) => context.write("second called"));
@@ -102,6 +102,26 @@ describe("ScriptRunner Class", () => {
                 "first called",
                 "second called",
             ]);
+        });
+
+        test("should execute a command in a specific package", async () => {
+            // arrange
+            cp.__registerCommand("pwd", (context: any) => context.write(context.options.cwd));
+
+            const repository = new RepositoryBuilder("/repo")
+                .addPackage("alpha", "1.0.0")
+                .addPackage("beta", "1.0.0")
+                .build();
+
+            const log = new InMemoryLog();
+
+            const executor = new DefaultScriptRunner(repository, log);
+
+            // act
+            await executor.exec("pwd", { packages: ["beta"] });
+
+            // assert
+            expect(log.info).toEqual(["/repo/packages/beta"]);
         });
 
     });

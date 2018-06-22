@@ -8,7 +8,7 @@ describe("DefaultRepository Class", () => {
 
     describe("allPackages", () => {
 
-        it("should return all packages", async () => {
+        test("should return all packages", async () => {
             // arrange
             fs.__mkdir("/repo/pkg/alpha");
             fs.__mkdir("/repo/pkg/beta");
@@ -27,7 +27,7 @@ describe("DefaultRepository Class", () => {
             ]);
         });
 
-        it("should throw error when packages directory does not exist", async () => {
+        test("should throw error when packages directory does not exist", async () => {
             // arrange
             const repository = new DefaultRepository("/repo");
 

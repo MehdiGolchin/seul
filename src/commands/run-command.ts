@@ -13,6 +13,8 @@ export class RunCommand implements Command {
         const scriptRunner = services.getService<ScriptRunner>("script");
 
         const scriptName = params[0];
+        const packages = params.slice(1);
+
         const descriptor = await repository.getDescriptor();
         if (!descriptor.scripts) {
             return log.error("Please define your scripts in packages.json file.");
@@ -23,7 +25,9 @@ export class RunCommand implements Command {
             return log.error(`'${scriptName}' not defined.`);
         }
 
-        await scriptRunner.exec(scripts);
+        await scriptRunner.exec(scripts, {
+            packages: packages.length ? packages : undefined,
+        });
     }
 
 }

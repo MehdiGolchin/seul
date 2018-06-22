@@ -4,7 +4,7 @@ describe("ServiceProvider Class", () => {
 
     describe("addSingleton", () => {
 
-        it("should register a singleton service", () => {
+        test("should register a singleton service", () => {
             // arrange
             const serviceName = "greeting";
             const expected = new GreetingService();
@@ -24,7 +24,7 @@ describe("ServiceProvider Class", () => {
 
     describe("addTransient", () => {
 
-        it("should register a transient service", () => {
+        test("should register a transient service", () => {
             // arrange
             const serviceName = "greeting";
             const services = new DefaultServiceProvider();
