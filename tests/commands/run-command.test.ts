@@ -8,18 +8,21 @@ describe("RunCommand Class", () => {
 
     test("should run a single script", async () => {
         // arrange
+        const script = "yarn install";
+
         const descriptor: RepositoryDescriptor = {
             packagesDir: "packages",
             scripts: {
-                install: "yarn install",
+                install: script,
             },
         };
 
         const repository = new RepositoryBuilder("/repo")
+            .addPackage("alpha", "1.0.0")
             .setOptions(descriptor)
             .build();
 
-        const scriptRunner = new DummyScriptRunner();
+        const scriptRunner = new DummyScriptRunner(repository);
 
         const services = new DefaultServiceProvider()
             .addSingleton("script", scriptRunner)
@@ -32,24 +35,28 @@ describe("RunCommand Class", () => {
         });
 
         // assert
-        expect(scriptRunner.log).toEqual(["yarn install"]);
-        expect(scriptRunner.packages).toBeUndefined();
+        expect(scriptRunner.log).toEqual({
+            alpha: [script],
+        });
     });
 
     test("should run an array of scripts", async () => {
         // arrange
+        const script = ["yarn build", "jest"];
+
         const descriptor: RepositoryDescriptor = {
             packagesDir: "packages",
             scripts: {
-                test: ["yarn build", "jest"],
+                test: script,
             },
         };
 
         const repository = new RepositoryBuilder("/repo")
+            .addPackage("alpha", "1.0.0")
             .setOptions(descriptor)
             .build();
 
-        const scriptRunner = new DummyScriptRunner();
+        const scriptRunner = new DummyScriptRunner(repository);
 
         const services = new DefaultServiceProvider()
             .addSingleton("script", scriptRunner)
@@ -62,8 +69,9 @@ describe("RunCommand Class", () => {
         });
 
         // assert
-        expect(scriptRunner.log).toEqual(["yarn build", "jest"]);
-        expect(scriptRunner.packages).toBeUndefined();
+        expect(scriptRunner.log).toEqual({
+            alpha: script,
+        });
     });
 
     test("should show error when scripts property does not exist", async () => {
@@ -73,13 +81,14 @@ describe("RunCommand Class", () => {
         };
 
         const repository = new RepositoryBuilder("/repo")
+            .addPackage("alpha", "1.0.0")
             .setOptions(descriptor)
             .build();
 
         const log = new InMemoryLog();
 
         const services = new DefaultServiceProvider()
-            .addSingleton("script", new DummyScriptRunner())
+            .addSingleton("script", new DummyScriptRunner(repository))
             .addSingleton("repository", repository)
             .addSingleton("log", log);
 
@@ -91,36 +100,6 @@ describe("RunCommand Class", () => {
 
         // assert
         expect(log.errors).toEqual(["Please define your scripts in packages.json file."]);
-    });
-
-    test("should show error when specific script does not exist", async () => {
-        // arrange
-        const descriptor: RepositoryDescriptor = {
-            packagesDir: "packages",
-            scripts: {
-                install: "yarn install",
-            },
-        };
-
-        const repository = new RepositoryBuilder("/repo")
-            .setOptions(descriptor)
-            .build();
-
-        const log = new InMemoryLog();
-
-        const services = new DefaultServiceProvider()
-            .addSingleton("script", new DummyScriptRunner())
-            .addSingleton("repository", repository)
-            .addSingleton("log", log);
-
-        // act
-        await new RunCommand().run({
-            services,
-            params: ["test"],
-        });
-
-        // assert
-        expect(log.errors).toEqual(["'test' not defined."]);
     });
 
     test("should run a single command in the specific packages", async () => {
@@ -135,10 +114,13 @@ describe("RunCommand Class", () => {
         };
 
         const repository = new RepositoryBuilder("/repo")
+            .addPackage("alpha", "1.0.0")
+            .addPackage("beta", "1.0.0")
+            .addPackage("gamma", "1.0.0")
             .setOptions(descriptor)
             .build();
 
-        const scriptRunner = new DummyScriptRunner();
+        const scriptRunner = new DummyScriptRunner(repository);
 
         const services = new DefaultServiceProvider()
             .addSingleton("script", scriptRunner)
@@ -151,8 +133,43 @@ describe("RunCommand Class", () => {
         });
 
         // assert
-        expect(scriptRunner.log).toEqual([script]);
-        expect(scriptRunner.packages).toEqual(["alpha", "gamma"]);
+        expect(scriptRunner.log).toEqual({
+            alpha: [script],
+            gamma: [script],
+        });
+    });
+
+    test("should run a bash command", async () => {
+        // arrange
+        const script = "yarn add jest --dev";
+
+        const descriptor: RepositoryDescriptor = {
+            packagesDir: "packages",
+            scripts: {},
+        };
+
+        const repository = new RepositoryBuilder("/repo")
+            .addPackage("alpha", "1.0.0")
+            .setOptions(descriptor)
+            .build();
+
+        const scriptRunner = new DummyScriptRunner(repository);
+
+        const services = new DefaultServiceProvider()
+            .addSingleton("script", scriptRunner)
+            .addSingleton("repository", repository)
+            .addSingleton("log", new InMemoryLog());
+
+        // act
+        await new RunCommand().run({
+            services,
+            params: [script],
+        });
+
+        // assert
+        expect(scriptRunner.log).toEqual({
+            alpha: [script],
+        });
     });
 
 });

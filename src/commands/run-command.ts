@@ -21,11 +21,8 @@ export class RunCommand implements Command {
         }
 
         const scripts = descriptor.scripts[scriptName];
-        if (!scripts) {
-            return log.error(`'${scriptName}' not defined.`);
-        }
 
-        await scriptRunner.exec(scripts, {
+        await scriptRunner.exec(scripts || scriptName, {
             packages: packages.length ? packages : undefined,
         });
     }
