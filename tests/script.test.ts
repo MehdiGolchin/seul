@@ -35,6 +35,29 @@ describe("ScriptRunner Class", () => {
             ]);
         });
 
+        test("should add .bin directory to path variable", async () => {
+            // arrange
+            cp.__registerCommand("pwd", (context: any) => {
+                context.write(context.options.env.PATH);
+            });
+
+            const log = new InMemoryLog();
+
+            const repository = new RepositoryBuilder("/repo")
+                .addPackage("alpha", "1.0.0")
+                .addPackage("beta", "1.0.0")
+                .build();
+
+            const executor = new DefaultScriptRunner(repository, log);
+
+            // act
+            await executor.exec("pwd");
+
+            // assert
+            expect(log.info.shift()).toContain("/repo/packages/alpha/node_modules/.bin");
+            expect(log.info.shift()).toContain("/repo/packages/beta/node_modules/.bin");
+        });
+
         test("should execute a command and log the error", async () => {
             // arrange
             const expected = "Unknown command.";

@@ -1,4 +1,5 @@
 import * as cp from "child_process";
+import * as path from "path";
 import { Log } from "./log";
 import { Package } from "./package";
 import { Repository } from "./repository";
@@ -38,7 +39,13 @@ export class DefaultScriptRunner implements ScriptRunner {
 
     private execCommand(command: string, pkg: Package): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            cp.exec(command, { cwd: pkg.root }, (err, stdout, stderr) => {
+            const options = {
+                cwd: pkg.root,
+                env: {
+                    PATH: `${process.env.PATH}:${path.join(pkg.root, "node_modules/.bin")}`,
+                },
+            };
+            cp.exec(command, options, (err, stdout, stderr) => {
                 if (err) {
                     return reject(err);
                 }

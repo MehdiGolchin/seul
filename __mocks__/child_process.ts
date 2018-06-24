@@ -5,6 +5,7 @@ type CommandFunc = (context: ExecContext) => void;
 
 interface ExecOptions {
     readonly cwd: string;
+    readonly env: any;
 }
 
 class ExecContext {
