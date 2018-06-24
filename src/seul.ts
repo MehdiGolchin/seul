@@ -6,6 +6,9 @@ import { DefaultRepository, Repository } from "./repository";
 import { DefaultScriptRunner } from "./script";
 import { DefaultServiceProvider, ServiceProvider } from "./service";
 
+// tslint:disable-next-line:no-var-requires
+require("console.table");
+
 const cwd = process.cwd();
 const params = process.argv.slice(2);
 

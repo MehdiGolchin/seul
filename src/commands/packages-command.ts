@@ -3,6 +3,12 @@ import { Log } from "../log";
 import { Package } from "../package";
 import { Repository } from "../repository";
 
+export interface PackageInfo {
+    readonly name: string;
+    readonly version: string;
+    readonly path: string;
+}
+
 export class PackagesCommand implements Command {
 
     name = "packages";
@@ -13,17 +19,23 @@ export class PackagesCommand implements Command {
 
         const packages = await repository.allPackages();
 
-        await Promise.all(
-            packages.map((pkg: Package) => this.writeInfo(pkg, log)),
+        const info = await Promise.all(
+            packages.map((pkg: Package) => this.mapDescriptor(pkg)),
         );
+
+        log.table(info.filter((e) => e));
     }
 
-    private async writeInfo(pkg: Package, log: Log) {
+    private async mapDescriptor(pkg: Package): Promise<PackageInfo | null> {
         try {
             const descriptor = await pkg.getDescriptor();
-            log.write(`- ${descriptor.name} v${descriptor.version} (${pkg.root})`);
+            return {
+                name: descriptor.name,
+                version: descriptor.version,
+                path: pkg.root,
+            };
         } catch (ex) {
-            log.error(`- '${pkg.root}' contains no package.json file.`);
+            return null;
         }
     }
 
