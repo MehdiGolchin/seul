@@ -1,5 +1,5 @@
-import { Repository } from "../../src/repository";
-import { RunScriptOptions, ScriptRunner } from "../../src/script";
+import { Repository } from "../src/repository";
+import { RunScriptOptions, ScriptRunner } from "../src/script";
 
 export class DummyScriptRunner implements ScriptRunner {
 

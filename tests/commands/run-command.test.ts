@@ -2,7 +2,8 @@ import { RunCommand } from "../../src/commands/run-command";
 import { InMemoryLog } from "../../src/log";
 import { RepositoryDescriptor } from "../../src/repository";
 import { DefaultServiceProvider } from "../../src/service";
-import { DummyScriptRunner, RepositoryBuilder } from "../builders";
+import { RepositoryBuilder } from "../builders";
+import { DummyScriptRunner } from "../dummy-script-runner";
 
 describe("RunCommand Class", () => {
 
