@@ -75,34 +75,6 @@ describe("RunCommand Class", () => {
         });
     });
 
-    test("should show error when scripts property does not exist", async () => {
-        // arrange
-        const descriptor: RepositoryDescriptor = {
-            packagesDir: "packages",
-        };
-
-        const repository = new RepositoryBuilder("/repo")
-            .addPackage("alpha", "1.0.0")
-            .setOptions(descriptor)
-            .build();
-
-        const log = new InMemoryLog();
-
-        const services = new DefaultServiceProvider()
-            .addSingleton("script", new DummyScriptRunner(repository))
-            .addSingleton("repository", repository)
-            .addSingleton("log", log);
-
-        // act
-        await new RunCommand().run({
-            services,
-            params: ["test"],
-        });
-
-        // assert
-        expect(log.errors).toEqual(["Please define your scripts in packages.json file."]);
-    });
-
     test("should run a single command in the specific packages", async () => {
         // arrange
         const script = "rm -rf dist";

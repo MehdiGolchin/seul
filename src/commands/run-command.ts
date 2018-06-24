@@ -1,5 +1,4 @@
 import { Command, RunCommandOptions } from "../command";
-import { Log } from "../log";
 import { Repository } from "../repository";
 import { ScriptRunner } from "../script";
 
@@ -9,18 +8,13 @@ export class RunCommand implements Command {
 
     async run({ services, params }: RunCommandOptions): Promise<any> {
         const repository = services.getService<Repository>("repository");
-        const log = services.getService<Log>("log");
         const scriptRunner = services.getService<ScriptRunner>("script");
 
         const scriptName = params[0];
         const packages = params.slice(1);
 
         const descriptor = await repository.getDescriptor();
-        if (!descriptor.scripts) {
-            return log.error("Please define your scripts in packages.json file.");
-        }
-
-        const scripts = descriptor.scripts[scriptName];
+        const scripts = descriptor.scripts ? descriptor.scripts[scriptName] : null;
 
         await scriptRunner.exec(scripts || scriptName, {
             packages: packages.length ? packages : undefined,
