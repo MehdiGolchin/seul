@@ -6,7 +6,7 @@ Seul is a simple Task Runner for your monorepos. It is a French word that means 
 
 ### Install
 
-Seul has not yet been released. But if you are curious about that, please follow the [Clone & Build section](#Clone-and-Build).
+Seul has not yet been released. But if you are curious about that, please follow the [Clone & Build section](#clone--build).
 
 ### Create a Monorepo
 
