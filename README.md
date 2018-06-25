@@ -77,7 +77,7 @@ Now you can use run command again to build your project.
 seul run build
 ```
 
-### Clone and Build
+### Clone & Build
 
 To clone and build the project you need git and node installed on your computer. If you have the pre-requisites, choose a destination and run following command to start cloning.
 
