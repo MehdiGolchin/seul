@@ -7,7 +7,7 @@ export class DummyRepository implements Repository {
 
     private readonly packages: Package[] = [];
     private readonly indexedPackages: { [name: string]: Package } = {};
-    private options: RepositoryDescriptor = { packagesDir: "packages" };
+    private options: Partial<RepositoryDescriptor>;
 
     constructor(
         readonly services: ServiceProvider,
@@ -47,7 +47,7 @@ export class DummyRepository implements Repository {
     }
 
     getDescriptor(): Promise<RepositoryDescriptor> {
-        return Promise.resolve(this.options);
+        return Promise.resolve({ ...this.initialOptions, ...this.options });
     }
 
 }
