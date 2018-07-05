@@ -12,9 +12,14 @@ export interface ServiceCollection {
     [name: string]: ServiceFactory;
 }
 
+export interface ServiceCache {
+    [name: string]: any;
+}
+
 export class DefaultServiceProvider implements ServiceProvider {
 
     private readonly services: ServiceCollection = {};
+    private readonly cache: ServiceCache = {};
 
     addFactory<T>(name: string, factory: ServiceFactory<T>): ServiceProvider {
         this.services[name] = factory;
@@ -32,9 +37,15 @@ export class DefaultServiceProvider implements ServiceProvider {
     }
 
     getService<T>(name: string): T {
+        let service = this.cache[name];
+        if (service) {
+            return service as T;
+        }
         const factory = this.services[name];
         if (typeof factory === "function") {
-            return factory(this);
+            service = factory(this);
+            this.cache[name] = service;
+            return service;
         }
         throw new Error(`'${name}' service not found.`);
     }

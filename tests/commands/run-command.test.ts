@@ -3,14 +3,13 @@ import * as Constants from "../../src/constants";
 import { DefaultServiceProvider } from "../../src/service";
 import { DummyScriptRunner } from "../dummy-script-runner";
 
-describe("RunCommand Class", () => {
+describe("RunCommand", () => {
 
     test("should run a command in all packages", async () => {
         // arrange
         const command = "install";
-        const services = new DefaultServiceProvider();
-        const scriptRunner = new DummyScriptRunner(services);
-        services.addInstance(Constants.ScriptRunner, scriptRunner);
+        const services = new DefaultServiceProvider()
+            .addType(Constants.ScriptRunner, DummyScriptRunner);
 
         // act
         await new RunCommand().run({
@@ -19,6 +18,7 @@ describe("RunCommand Class", () => {
         });
 
         // assert
+        const scriptRunner = services.getService<DummyScriptRunner>(Constants.ScriptRunner);
         expect(scriptRunner.log).toEqual({
             all: command,
         });
@@ -27,9 +27,8 @@ describe("RunCommand Class", () => {
     test("should run a command in the specific packages", async () => {
         // arrange
         const command = "rm -rf dist";
-        const services = new DefaultServiceProvider();
-        const scriptRunner = new DummyScriptRunner(services);
-        services.addInstance(Constants.ScriptRunner, scriptRunner);
+        const services = new DefaultServiceProvider()
+            .addType(Constants.ScriptRunner, DummyScriptRunner);
 
         // act
         await new RunCommand().run({
@@ -38,6 +37,7 @@ describe("RunCommand Class", () => {
         });
 
         // assert
+        const scriptRunner = services.getService<DummyScriptRunner>(Constants.ScriptRunner);
         expect(scriptRunner.log).toEqual({
             alpha: command,
             beta: command,
