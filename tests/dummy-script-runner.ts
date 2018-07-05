@@ -1,31 +1,17 @@
-import { Repository } from "../src/repository";
 import { RunScriptOptions, ScriptRunner } from "../src/script";
+import { ServiceProvider } from "../src/service";
 
 export class DummyScriptRunner implements ScriptRunner {
 
-    readonly log: { [name: string]: string[] } = {};
+    readonly log: { [name: string]: string } = {};
 
-    constructor(readonly repository: Repository) { }
+    constructor(readonly services: ServiceProvider) { }
 
-    async exec(commands: string | string[], options: Partial<RunScriptOptions>): Promise<any> {
-        const packages = await this.repository.allPackages();
-        for (const pkg of packages) {
-            const descriptor = await pkg.getDescriptor();
-
-            if (options.packages && options.packages.indexOf(descriptor.name) === -1) {
-                continue;
-            }
-
-            let value = this.log[descriptor.name];
-            if (!value) {
-                this.log[descriptor.name] = value = [];
-            }
-
-            if (Array.isArray(commands)) {
-                value.push(...commands);
-            } else {
-                value.push(commands);
-            }
+    async exec(command: string, options: Partial<RunScriptOptions>): Promise<any> {
+        if (options.packages) {
+            options.packages.forEach((p) => this.log[p] = command);
+        } else {
+            this.log.all = command;
         }
     }
 

@@ -7,13 +7,11 @@ export interface Log {
 export class ConsoleLog implements Log {
 
     error(message: string): void {
-        // tslint:disable-next-line:no-console
-        console.log(message);
+        process.stderr.write(message);
     }
 
     write(message: string): void {
-        // tslint:disable-next-line:no-console
-        console.log(message);
+        process.stdout.write(message);
     }
 
     table(data: any[]): void {

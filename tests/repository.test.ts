@@ -3,6 +3,7 @@ jest.mock("fs");
 const fs = require("fs");
 
 import { DefaultRepository } from "../src/repository";
+import { DefaultServiceProvider } from "../src/service";
 
 describe("DefaultRepository Class", () => {
 
@@ -15,7 +16,11 @@ describe("DefaultRepository Class", () => {
             fs.__writeFile("/repo/pkg/foo.json");
             fs.__writeFile("/repo/pkg.json");
 
-            const repository = new DefaultRepository("/repo", { packagesDir: "pkg" });
+            const repository = new DefaultRepository(
+                new DefaultServiceProvider(),
+                "/repo",
+                { packagesDir: "pkg" },
+            );
 
             // act
             const packages = await repository.allPackages();
@@ -29,18 +34,22 @@ describe("DefaultRepository Class", () => {
 
         test("should throw error when packages directory does not exist", async () => {
             // arrange
-            const repository = new DefaultRepository("/repo");
+            const repository = new DefaultRepository(
+                new DefaultServiceProvider(),
+                "/repo",
+                { packagesDir: "pkgs" },
+            );
 
             // act
-            let error: Error = null;
+            let err: Error | null = null;
             try {
                 await repository.allPackages();
             } catch (ex) {
-                error = ex;
+                err = ex;
             }
 
             // assert
-            expect(error.message).toEqual("Packages not found.");
+            expect(err).toEqual(new Error("Packages not found."));
         });
 
     });
@@ -53,10 +62,14 @@ describe("DefaultRepository Class", () => {
                 packages: "/pkg",
             });
 
-            const repository = new DefaultRepository("/repo", {
-                packagesDir: "/packages",
-                foo: "10",
-            });
+            const repository = new DefaultRepository(
+                new DefaultServiceProvider(),
+                "/repo",
+                {
+                    packagesDir: "/packages",
+                    foo: "10",
+                },
+            );
 
             // act
             const descriptor = await repository.getDescriptor();

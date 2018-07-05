@@ -1,5 +1,5 @@
 import { RunCommandOptions } from "../src/command";
-import { CommandExecutorBuilder } from "./builders";
+import { CommandExecutorBuilder } from "./command-executor-builder";
 
 describe("CommandExecutor Class", () => {
 

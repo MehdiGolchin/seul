@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Package } from "./package";
+import { ServiceProvider } from "./service";
 
 export interface Script {
     [key: string]: string | string[];
@@ -13,6 +14,7 @@ export interface RepositoryDescriptor {
 }
 
 export interface Repository {
+    readonly services: ServiceProvider;
     readonly root: string;
     readonly initialOptions: RepositoryDescriptor;
     allPackages(): Promise<Package[]>;
@@ -24,6 +26,7 @@ export class DefaultRepository implements Repository {
     private cachedDescriptor: RepositoryDescriptor | null = null;
 
     constructor(
+        readonly services: ServiceProvider,
         readonly root: string,
         readonly initialOptions: RepositoryDescriptor = { packagesDir: "packages" },
     ) { }

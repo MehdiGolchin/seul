@@ -1,35 +1,42 @@
 export interface ServiceProvider {
-    addSingleton(name: string, service: any): ServiceProvider;
-    addTransient(name: string, service: any): ServiceProvider;
+    addFactory<T>(name: string, factory: (service: ServiceProvider) => T): ServiceProvider;
+    addType<T>(name: string, type: new (services: ServiceProvider) => T): ServiceProvider;
+    addInstance<T>(name: string, service: T): ServiceProvider;
     getService<T>(name: string): T;
 }
 
-export type ServiceFactory = (provider: ServiceProvider) => any;
+export type ServiceFactory<T = any> = (services: ServiceProvider) => T;
+export type ServiceConstructor<T = any> = new (services: ServiceProvider) => T;
 
 export interface ServiceCollection {
-    [name: string]: ServiceFactory | any;
+    [name: string]: ServiceFactory;
 }
 
 export class DefaultServiceProvider implements ServiceProvider {
 
     private readonly services: ServiceCollection = {};
 
-    addSingleton(name: string, service: any): DefaultServiceProvider {
-        this.services[name] = service;
-        return this;
-    }
-
-    addTransient(name: string, factory: ServiceFactory): DefaultServiceProvider {
+    addFactory<T>(name: string, factory: ServiceFactory<T>): ServiceProvider {
         this.services[name] = factory;
         return this;
     }
 
+    addType<T>(name: string, type: ServiceConstructor<T>): ServiceProvider {
+        this.services[name] = (serviceProvider) => new type(serviceProvider);
+        return this;
+    }
+
+    addInstance<T>(name: string, service: T): ServiceProvider {
+        this.services[name] = () => service;
+        return this;
+    }
+
     getService<T>(name: string): T {
-        const value = this.services[name];
-        if (typeof this.services[name] === "function") {
-            return value(this) as T;
+        const factory = this.services[name];
+        if (typeof factory === "function") {
+            return factory(this);
         }
-        return value as T;
+        throw new Error(`'${name}' service not found.`);
     }
 
 }

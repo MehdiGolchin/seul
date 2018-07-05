@@ -1,4 +1,5 @@
 import { Command, RunCommandOptions } from "../command";
+import * as Constants from "../constants";
 import { Log } from "../log";
 import { Package } from "../package";
 import { Repository } from "../repository";
@@ -14,8 +15,8 @@ export class PackagesCommand implements Command {
     name = "packages";
 
     async run({ services }: RunCommandOptions) {
-        const repository = services.getService<Repository>("repository");
-        const log = services.getService<Log>("log");
+        const repository = services.getService<Repository>(Constants.Repository);
+        const log = services.getService<Log>(Constants.Log);
 
         const packages = await repository.allPackages();
 

@@ -1,5 +1,5 @@
-import { Command, CommandCreator, DefaultCommandExecutor, RunCommandOptions } from "../../src/command";
-import { DefaultServiceProvider } from "../../src/service";
+import { Command, CommandCreator, DefaultCommandExecutor, RunCommandOptions } from "../src/command";
+import { DefaultServiceProvider } from "../src/service";
 
 export type CommandRunFunc = (options: RunCommandOptions) => Promise<any>;
 

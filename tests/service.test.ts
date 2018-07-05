@@ -1,49 +1,91 @@
-import { DefaultServiceProvider } from "../src/service";
+import { DefaultServiceProvider, ServiceProvider } from "../src/service";
 
 describe("ServiceProvider Class", () => {
 
-    describe("addSingleton", () => {
+    describe("addType", () => {
 
-        test("should register a singleton service", () => {
+        test("should register a service type", () => {
             // arrange
-            const serviceName = "greeting";
-            const expected = new GreetingService();
-            const services = new DefaultServiceProvider();
+            const serviceProvider = new DefaultServiceProvider();
 
             // act
-            services.addSingleton(serviceName, expected);
+            serviceProvider
+                .addType(Greeting.serviceName, Greeting)
+                .addType(Strings.serviceName, Strings);
 
             // assert
-            const first = services.getService<GreetingService>(serviceName);
-            const second = services.getService<GreetingService>(serviceName);
-            expect(first).toBe(expected);
-            expect(first).toBe(second);
+            const service = serviceProvider.getService<Greeting>(Greeting.serviceName);
+            expect(service.sayHello("John")).toEqual("Hey John");
         });
 
     });
 
-    describe("addTransient", () => {
+    describe("addFactory", () => {
 
-        test("should register a transient service", () => {
+        test("should register a service factory method", () => {
             // arrange
-            const serviceName = "greeting";
-            const services = new DefaultServiceProvider();
+            const serviceProvider = new DefaultServiceProvider();
 
             // act
-            services.addTransient(serviceName, () => new GreetingService());
+            serviceProvider
+                .addFactory(Greeting.serviceName, (services) => new Greeting(services))
+                .addType(Strings.serviceName, Strings);
 
             // assert
-            const first = services.getService<GreetingService>(serviceName);
-            const second = services.getService<GreetingService>(serviceName);
-            expect(first).toBeInstanceOf(GreetingService);
-            expect(second).toBeInstanceOf(GreetingService);
-            expect(first).not.toEqual(second);
+            const service = serviceProvider.getService<Greeting>(Greeting.serviceName);
+            expect(service.sayHello("John")).toEqual("Hey John");
         });
 
     });
 
-    class GreetingService {
-        sayHello = (name: string) => `Hey ${name}`;
+    describe("addInstance", () => {
+
+        test("should register a service instance", () => {
+            // arrange
+            const serviceProvider = new DefaultServiceProvider();
+
+            // act
+            serviceProvider
+                .addType(Greeting.serviceName, Greeting)
+                .addInstance(Strings.serviceName, new Strings());
+
+            // assert
+            const service = serviceProvider.getService<Greeting>(Greeting.serviceName);
+            expect(service.sayHello("John")).toEqual("Hey John");
+        });
+
+    });
+
+    describe("getService", () => {
+
+        test("should throw error when service does not exist", () => {
+            // arrange
+            const serviceProvider = new DefaultServiceProvider();
+
+            // act & assert
+            expect(() => {
+                serviceProvider.getService<Strings>(Strings.serviceName);
+            }).toThrow(`'${Strings.serviceName}' service not found.`);
+        });
+
+    });
+
+    class Strings {
+        static readonly serviceName = "Strings";
+        readonly hey = "Hey";
+    }
+
+    // tslint:disable-next-line:max-classes-per-file
+    class Greeting {
+        static readonly serviceName = "Greeting";
+
+        private readonly strings: Strings;
+
+        constructor(private readonly services: ServiceProvider) {
+            this.strings = services.getService<Strings>(Strings.serviceName);
+        }
+
+        sayHello = (name: string) => `${this.strings.hey} ${name}`;
     }
 
 });
