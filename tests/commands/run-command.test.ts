@@ -14,13 +14,13 @@ describe("RunCommand", () => {
         // act
         await new RunCommand().run({
             services,
-            params: [command],
+            params: [command]
         });
 
         // assert
         const scriptRunner = services.getService<DummyScriptRunner>(Constants.ScriptRunner);
         expect(scriptRunner.log).toEqual({
-            all: command,
+            all: command
         });
     });
 
@@ -33,14 +33,14 @@ describe("RunCommand", () => {
         // act
         await new RunCommand().run({
             services,
-            params: [command, "alpha", "beta"],
+            params: [command, "alpha", "beta"]
         });
 
         // assert
         const scriptRunner = services.getService<DummyScriptRunner>(Constants.ScriptRunner);
         expect(scriptRunner.log).toEqual({
             alpha: command,
-            beta: command,
+            beta: command
         });
     });
 
