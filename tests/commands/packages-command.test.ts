@@ -9,25 +9,23 @@ describe("PackagesCommand", () => {
 
     test("should print a list of packages", async () => {
         // arrange
-        const log = new InMemoryLog();
         const services = new DefaultServiceProvider()
-            .addInstance(Constants.Log, log);
-
-        const repository = new DummyRepository(services, "/repo")
-            .addPackage("alpha", "1.0.0")
-            .addPackage("beta", "2.0.0");
-
-        services.addInstance(Constants.Repository, repository);
+            .addType(Constants.Log, InMemoryLog)
+            .addFactory(Constants.Repository, (sp) => new DummyRepository(sp, "/repo")
+                .addPackage("alpha", "1.0.0")
+                .addPackage("beta", "2.0.0")
+            );
 
         const options: RunCommandOptions = {
             services,
-            params: [],
+            params: []
         };
 
         // act
         await new PackagesCommand().run(options);
 
         // assert
+        const log = services.getService<InMemoryLog>(Constants.Log);
         expect(log.data).toEqual([
             [
                 { name: "alpha", version: "1.0.0", path: "/repo/packages/alpha" },
@@ -38,27 +36,23 @@ describe("PackagesCommand", () => {
 
     test("should ignore the packages without descriptor", async () => {
         // arrange
-        const services = new DefaultServiceProvider();
-
-        const repository = new DummyRepository(services, "/repo")
-            .addPackage("alpha", "1.0.0")
-            .addPackageWithoutDescriptor("beta");
-
-        const log = new InMemoryLog();
-
-        services
-            .addInstance(Constants.Repository, repository)
-            .addInstance(Constants.Log, log);
+        const services = new DefaultServiceProvider()
+            .addType(Constants.Log, InMemoryLog)
+            .addFactory(Constants.Repository, (sp) => new DummyRepository(sp, "/repo")
+                .addPackage("alpha", "1.0.0")
+                .addPackageWithoutDescriptor("beta")
+            );
 
         const options: RunCommandOptions = {
             services,
-            params: [],
+            params: []
         };
 
         // act
         await new PackagesCommand().run(options);
 
         // assert
+        const log = services.getService<InMemoryLog>(Constants.Log);
         expect(log.data).toEqual([
             [
                 { name: "alpha", version: "1.0.0", path: "/repo/packages/alpha" },
