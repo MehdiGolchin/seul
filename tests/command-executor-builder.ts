@@ -18,7 +18,7 @@ export class CommandExecutorBuilder {
     build() {
         return new DefaultCommandExecutor(
             this.services,
-            ...this.commands,
+            ...this.commands
         );
     }
 
