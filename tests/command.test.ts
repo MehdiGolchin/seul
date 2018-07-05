@@ -1,11 +1,11 @@
 import { RunCommandOptions } from "../src/command";
 import { CommandExecutorBuilder } from "./command-executor-builder";
 
-describe("CommandExecutor Class", () => {
+describe("CommandExecutor", () => {
 
-    describe("exec Method", () => {
+    describe("exec", () => {
 
-        test("should execute a command", () => {
+        test("should execute a command", async () => {
             // arrange
             const expected = "OK";
 
@@ -14,51 +14,59 @@ describe("CommandExecutor Class", () => {
                 .build();
 
             // act
-            const promise = executor.exec("test");
+            const output = await executor.exec("test");
 
             // assert
-            expect(promise).resolves.toBe(expected);
+            expect(output).toEqual(expected);
         });
 
-        test("should reject promise when command does not exist", () => {
+        test("should throw error when command does not exist", async () => {
             // arrange
             const executor = new CommandExecutorBuilder().build();
 
             // act
-            const promise = executor.exec("test");
+            let error: Error | null = null;
+            try {
+                await executor.exec("test");
+            } catch (ex) {
+                error = ex;
+            }
 
             // assert
-            expect(promise).rejects.toEqual(expect.objectContaining({
-                message: "Unsupported command 'test'.",
-            }));
+            expect(error).toEqual(new Error("Unsupported command 'test'."));
         });
 
-        test("should pass the parameters to the command", () => {
+        test("should pass the parameters into the command", async () => {
             // arrange
             const executor = new CommandExecutorBuilder()
                 .registerCommand("test", (p: RunCommandOptions) => Promise.resolve(p.params))
                 .build();
 
             // act
-            const promise = executor.exec("test", "123");
+            const output = await executor.exec("test", "123", "ABC");
 
             // assert
-            expect(promise).resolves.toEqual(["123"]);
+            expect(output).toEqual(["123", "ABC"]);
         });
 
-        test("should reject promise when command throws error", () => {
+        test("should throw error when something went wrong", async () => {
             // arrange
-            const error = new Error("An error!");
+            const expected = new Error("An error!");
 
             const executor = new CommandExecutorBuilder()
-                .registerCommand("test", () => { throw error; })
+                .registerCommand("test", () => { throw expected; })
                 .build();
 
             // act
-            const promise = executor.exec("test");
+            let actual: Error | null = null;
+            try {
+                await executor.exec("test");
+            } catch (ex) {
+                actual = ex;
+            }
 
             // assert
-            expect(promise).rejects.toEqual(error);
+            expect(actual).toEqual(expected);
         });
 
     });
