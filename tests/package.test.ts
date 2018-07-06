@@ -26,16 +26,21 @@ describe("Package Class", () => {
             expect(actual).toEqual(expected);
         });
 
-        test("should reject when package descriptor does not exist", () => {
+        test("should reject when package descriptor does not exist", async () => {
             // arrange
             const path = "/packages/alpha";
             const pkg = new Package(path);
 
             // act
-            const promise = pkg.getDescriptor();
+            let error: Error | null;
+            try {
+                await pkg.getDescriptor();
+            } catch (ex) {
+                error = ex;
+            }
 
             // assert
-            expect(promise).rejects.toThrow(`File does not exist. (${path}/package.json)`);
+            expect(error).toEqual(new Error(`File does not exist. (${path}/package.json)`));
         });
 
     });
