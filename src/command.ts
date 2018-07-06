@@ -18,9 +18,13 @@ export interface CommandExecutor {
     exec(...args: string[]): Promise<any>;
 }
 
+export interface CommandCollection {
+    [name: string]: Command;
+}
+
 export class DefaultCommandExecutor implements CommandExecutor {
 
-    private readonly commands: { [name: string]: Command };
+    private readonly commands: CommandCollection;
 
     constructor(
         readonly services: ServiceProvider,
