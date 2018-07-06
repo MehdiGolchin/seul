@@ -1,6 +1,6 @@
 import { DefaultServiceProvider, ServiceProvider } from "../src/service";
 
-describe("ServiceProvider Class", () => {
+describe("ServiceProvider", () => {
 
     describe("addType", () => {
 

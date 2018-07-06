@@ -4,7 +4,7 @@ const fs = require("fs");
 
 import { Package } from "../src/package";
 
-describe("Package Class", () => {
+describe("Package", () => {
 
     describe("getDescriptor", () => {
 

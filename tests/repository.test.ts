@@ -5,7 +5,7 @@ const fs = require("fs");
 import { DefaultRepository } from "../src/repository";
 import { DefaultServiceProvider } from "../src/service";
 
-describe("DefaultRepository Class", () => {
+describe("DefaultRepository", () => {
 
     describe("allPackages", () => {
 
