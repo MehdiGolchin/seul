@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 export interface Log {
     write(message: string): void;
     error(message: string): void;
