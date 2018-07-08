@@ -11,7 +11,7 @@ export class DummyScriptParser implements ScriptParser {
         return new Promise((resolve, reject) => {
             const rule = this.rules[command];
             if (!rule) {
-                return reject(rule);
+                return reject(new Error("Rule not found."));
             }
             return resolve(rule);
         });

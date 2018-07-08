@@ -10,19 +10,12 @@ describe("ScriptRunner", () => {
 
         test("should run a command in all packages", async () => {
             // arrange
-            const services = new DefaultServiceProvider();
-
-            const repository = new DummyRepository(services, "/repo")
-                .addPackage("alpha", "1.0.0")
-                .addPackage("beta", "1.0.0");
+            const services = setupServices();
 
             const pwd = jest.fn();
-            const scriptParser = new DummyScriptParser(services)
-                .addRule("pwd", pwd);
-
             services
-                .addInstance(Constants.Repository, repository)
-                .addInstance(Constants.ScriptParser, scriptParser);
+                .getService<DummyScriptParser>(Constants.ScriptParser)
+                .addRule("pwd", pwd);
 
             const executor = new DefaultScriptRunner(services);
 
@@ -30,6 +23,7 @@ describe("ScriptRunner", () => {
             await executor.exec("pwd");
 
             // assert
+            const repository = services.getService<DummyRepository>(Constants.Repository);
             expect(pwd.mock.calls).toEqual([
                 [repository.getPackage("alpha")],
                 [repository.getPackage("beta")],
@@ -38,19 +32,12 @@ describe("ScriptRunner", () => {
 
         test("should run a command in a specific package", async () => {
             // arrange
-            const services = new DefaultServiceProvider();
-
-            const repository = new DummyRepository(services, "/repo")
-                .addPackage("alpha", "1.0.0")
-                .addPackage("beta", "1.0.0");
+            const services = setupServices();
 
             const pwd = jest.fn();
-            const scriptParser = new DummyScriptParser(services)
-                .addRule("pwd", pwd);
-
             services
-                .addInstance(Constants.Repository, repository)
-                .addInstance(Constants.ScriptParser, scriptParser);
+                .getService<DummyScriptParser>(Constants.ScriptParser)
+                .addRule("pwd", pwd);
 
             const executor = new DefaultScriptRunner(services);
 
@@ -60,9 +47,36 @@ describe("ScriptRunner", () => {
             });
 
             // assert
+            const repository = services.getService<DummyRepository>(Constants.Repository);
             expect(pwd).toHaveBeenCalledTimes(1);
             expect(pwd).toHaveBeenCalledWith(repository.getPackage("beta"));
         });
+
+        test("should run a command in a specific package", async () => {
+            // arrange
+            const services = setupServices();
+            const executor = new DefaultScriptRunner(services);
+
+            // act
+            let error: Error | null = null;
+            try {
+                await executor.exec("pwd");
+            } catch (ex) {
+                error = ex;
+            }
+
+            // assert
+            expect(error).toEqual(new Error("Rule not found."));
+        });
+
+        function setupServices() {
+            return new DefaultServiceProvider()
+                .addFactory(Constants.Repository, (sp) => new DummyRepository(sp, "/repo")
+                    .addPackage("alpha", "1.0.0")
+                    .addPackage("beta", "1.0.0")
+                )
+                .addType(Constants.ScriptParser, DummyScriptParser);
+        }
 
     });
 

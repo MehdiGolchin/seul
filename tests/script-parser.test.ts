@@ -12,9 +12,7 @@ describe("ScriptParser", () => {
 
         test("should return a command script", async () => {
             // arrange
-            const scriptParser = setupParser({
-                scripts: {},
-            });
+            const scriptParser = setupParser({});
 
             // act
             const script = await scriptParser.parse("tsc") as CommandScript;
@@ -23,12 +21,27 @@ describe("ScriptParser", () => {
             expect(script.command).toEqual("tsc");
         });
 
-        test("should return a command script", async () => {
+        test("should return a command script when label does not exist", async () => {
             // arrange
             const scriptParser = setupParser({
                 scripts: {
-                    build: "tsc",
-                },
+                    build: "tsc"
+                }
+            });
+
+            // act
+            const script = await scriptParser.parse("foo") as CommandScript;
+
+            // assert
+            expect(script.command).toEqual("foo");
+        });
+
+        test("should find script by its label", async () => {
+            // arrange
+            const scriptParser = setupParser({
+                scripts: {
+                    build: "tsc"
+                }
             });
 
             // act
@@ -38,15 +51,15 @@ describe("ScriptParser", () => {
             expect(script.command).toEqual("tsc");
         });
 
-        test("should return a list of command script", async () => {
+        test("should return a composite command script", async () => {
             // arrange
             const scriptParser = setupParser({
                 scripts: {
                     build: [
                         "rm -rf dist",
-                        "tsc",
-                    ],
-                },
+                        "tsc"
+                    ]
+                }
             });
 
             // act
@@ -57,16 +70,16 @@ describe("ScriptParser", () => {
             expect(script.getAt<CommandScript>(1).command).toEqual("tsc");
         });
 
-        test("should return a label script", async () => {
+        test("should undrestand a goto", async () => {
             // arrange
             const scriptParser = setupParser({
                 scripts: {
                     clean: "rm -rf dist",
                     build: [
                         "@clean",
-                        "tsc",
-                    ],
-                },
+                        "tsc"
+                    ]
+                }
             });
 
             // act
@@ -81,8 +94,8 @@ describe("ScriptParser", () => {
             const services = new DefaultServiceProvider()
                 .addFactory(
                     Constants.Repository,
-                    () => new DummyRepository(services).setOptions(descriptor),
-            );
+                    () => new DummyRepository(services).setOptions(descriptor)
+                );
             return new DefaultScriptParser(services);
         }
 
