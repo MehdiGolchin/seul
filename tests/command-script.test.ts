@@ -18,9 +18,8 @@ describe("CommandScript", () => {
             const services = new DefaultServiceProvider()
                 .addType(Constants.Log, InMemoryLog);
 
-            const path = "/repo/packages/mypkg";
             const commandScript = new CommandScript(services, "");
-            const currentPackage = new Package(path);
+            const currentPackage = new Package("/repo/packages/mypkg");
 
             // act
             let error: Error | null = null;
@@ -44,23 +43,24 @@ describe("CommandScript", () => {
             const services = new DefaultServiceProvider()
                 .addType(Constants.Log, InMemoryLog);
 
-            const path = "/repo/packages/mypkg";
-            const commandScript = new CommandScript(services, "pwd");
-            const currentPackage = new Package(path);
+            const packagePath = "/repo/packages/mypkg";
+
+            const pwd = new CommandScript(services, "pwd");
+            const currentPackage = new Package(packagePath);
 
             // act
-            await commandScript.exec(currentPackage);
+            await pwd.exec(currentPackage);
 
             // assert
             const log = services.getService<InMemoryLog>(Constants.Log);
-            expect(log.info).toEqual([path]);
+            expect(log.info).toEqual([packagePath]);
         });
 
-        test("should display the error", async () => {
+        test("should log the error", async () => {
             // arrange
             const error = "An error occurred";
 
-            cp.__registerCommand("pwd", (context) => {
+            cp.__registerCommand("foo", (context) => {
                 context.stderr.emit("data", Buffer.from(error));
                 return 0;
             });
@@ -68,7 +68,7 @@ describe("CommandScript", () => {
             const services = new DefaultServiceProvider()
                 .addType(Constants.Log, InMemoryLog);
 
-            const commandScript = new CommandScript(services, "pwd");
+            const commandScript = new CommandScript(services, "foo");
             const currentPackage = new Package("/repo/packages/mypkg");
 
             // act
@@ -81,7 +81,7 @@ describe("CommandScript", () => {
 
         test("should have access to the node commnds", async () => {
             // arrange
-            cp.__registerCommand("pwd", (context, options) => {
+            cp.__registerCommand("env", (context, options) => {
                 context.stdout.emit("data", Buffer.from(options.env.PATH, "utf8"));
                 return 0;
             });
@@ -89,21 +89,22 @@ describe("CommandScript", () => {
             const services = new DefaultServiceProvider()
                 .addType(Constants.Log, InMemoryLog);
 
-            const path = "/repo/packages/mypkg";
-            const commandScript = new CommandScript(services, "pwd");
-            const currentPackage = new Package(path);
+            const packagePath = "/repo/packages/mypkg";
+
+            const env = new CommandScript(services, "env");
+            const currentPackage = new Package(packagePath);
 
             // act
-            await commandScript.exec(currentPackage);
+            await env.exec(currentPackage);
 
             // assert
             const log = services.getService<InMemoryLog>(Constants.Log);
-            expect(log.info.shift()).toContain(`${path}/node_modules/.bin`);
+            expect(log.info.shift()).toContain(`${packagePath}/node_modules/.bin`);
         });
 
-        test("should have pass the args", async () => {
+        test("should pass the args", async () => {
             // arrange
-            cp.__registerCommand("pwd", (context) => {
+            cp.__registerCommand("foo", (context) => {
                 context.stdout.emit("data", Buffer.from(context.args[0], "utf8"));
                 return 0;
             });
@@ -111,27 +112,26 @@ describe("CommandScript", () => {
             const services = new DefaultServiceProvider()
                 .addType(Constants.Log, InMemoryLog);
 
-            const path = "/repo/packages/mypkg";
-            const commandScript = new CommandScript(services, "pwd -P");
-            const currentPackage = new Package(path);
+            const pwd = new CommandScript(services, "foo -h");
+            const currentPackage = new Package("/repo/packages/mypkg");
 
             // act
-            await commandScript.exec(currentPackage);
+            await pwd.exec(currentPackage);
 
             // assert
             const log = services.getService<InMemoryLog>(Constants.Log);
-            expect(log.info).toEqual(["-P"]);
+            expect(log.info).toEqual(["-h"]);
         });
 
         test("should throw an exception when exit code is not zero", async () => {
             // arrange
-            cp.__registerCommand("pwd", () => 1);
+            cp.__registerCommand("foo", () => 1);
 
             const services = new DefaultServiceProvider()
                 .addType(Constants.Log, InMemoryLog);
 
             const path = "/repo/packages/mypkg";
-            const commandScript = new CommandScript(services, "pwd");
+            const commandScript = new CommandScript(services, "foo");
             const currentPackage = new Package(path);
 
             // act
@@ -143,7 +143,7 @@ describe("CommandScript", () => {
             }
 
             // assert
-            expect(error).toEqual(new Error("pwd has exited with code 1."));
+            expect(error).toEqual(new Error("foo has exited with code 1."));
         });
 
         beforeEach(cp.__clear);
