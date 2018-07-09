@@ -10,8 +10,10 @@ export class CompositeScript implements Script {
         return this.scripts[index] as T;
     }
 
-    exec(currentPackage: Package): Promise<any> {
-        throw new Error("Not implemented method.");
+    async exec(currentPackage: Package): Promise<any> {
+        for (const script of this.scripts) {
+            await script.exec(currentPackage);
+        }
     }
 
 }
