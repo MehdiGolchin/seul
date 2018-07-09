@@ -66,7 +66,11 @@ Here is a simple example of *packages.json* that uses a local typescript to comp
 ```javascript
 {
     "scripts": {
-        "build": "tsc"
+        "clean": "rm -rf dist",
+        "build": [
+            "@clean",
+            "tsc"
+        ]
     }
 }
 ```
