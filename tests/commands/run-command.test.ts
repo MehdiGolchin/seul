@@ -1,5 +1,5 @@
 import { RunCommand } from "../../src/commands/run-command";
-import * as Constants from "../../src/constants";
+import * as constants from "../../src/constants";
 import { DefaultServiceProvider } from "../../src/service";
 import { DummyScriptRunner } from "../dummy-script-runner";
 
@@ -9,7 +9,7 @@ describe("RunCommand", () => {
         // arrange
         const command = "install";
         const services = new DefaultServiceProvider()
-            .addType(Constants.ScriptRunner, DummyScriptRunner);
+            .addType(constants.scriptRunner, DummyScriptRunner);
 
         // act
         await new RunCommand().run({
@@ -18,7 +18,7 @@ describe("RunCommand", () => {
         });
 
         // assert
-        const scriptRunner = services.getService<DummyScriptRunner>(Constants.ScriptRunner);
+        const scriptRunner = services.getService<DummyScriptRunner>(constants.scriptRunner);
         expect(scriptRunner.log).toEqual({
             all: command
         });
@@ -28,7 +28,7 @@ describe("RunCommand", () => {
         // arrange
         const command = "rm -rf dist";
         const services = new DefaultServiceProvider()
-            .addType(Constants.ScriptRunner, DummyScriptRunner);
+            .addType(constants.scriptRunner, DummyScriptRunner);
 
         // act
         await new RunCommand().run({
@@ -37,7 +37,7 @@ describe("RunCommand", () => {
         });
 
         // assert
-        const scriptRunner = services.getService<DummyScriptRunner>(Constants.ScriptRunner);
+        const scriptRunner = services.getService<DummyScriptRunner>(constants.scriptRunner);
         expect(scriptRunner.log).toEqual({
             alpha: command,
             beta: command

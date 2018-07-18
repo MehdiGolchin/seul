@@ -49,7 +49,7 @@ describe("DefaultRepository", () => {
             }
 
             // assert
-            expect(err).toEqual(new Error("Packages not found."));
+            expect(err).toEqual(new Error("Packages not found. (/repo/pkgs)"));
         });
 
     });

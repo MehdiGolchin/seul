@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Package } from "./package";
-import { ServiceProvider } from "./service";
+import Package from "./package";
+import ServiceProvider from "./service";
 
 export interface Script {
     [key: string]: string | string[];
@@ -10,10 +10,11 @@ export interface Script {
 export interface RepositoryDescriptor {
     readonly packagesDir: string;
     readonly scripts?: Script;
+    readonly continueOnError?: string[];
     readonly [key: string]: any;
 }
 
-export interface Repository {
+export default interface Repository {
     readonly services: ServiceProvider;
     readonly root: string;
     readonly initialOptions: RepositoryDescriptor;
@@ -56,7 +57,7 @@ export class DefaultRepository implements Repository {
 
         const packagesExists = await this.exists(fullPath);
         if (!packagesExists) {
-            throw new Error("Packages not found.");
+            throw new Error(`Packages not found. (${fullPath})`);
         }
 
         const paths = await this.readDirectory(fullPath);

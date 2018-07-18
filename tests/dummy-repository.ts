@@ -1,9 +1,9 @@
 import * as path from "path";
-import { Package } from "../src/package";
-import { Repository, RepositoryDescriptor } from "../src/repository";
-import { ServiceProvider } from "../src/service";
+import Package from "../src/package";
+import Repository, { RepositoryDescriptor } from "../src/repository";
+import ServiceProvider from "../src/service";
 
-export class DummyRepository implements Repository {
+export default class DummyRepository implements Repository {
 
     private readonly packages: Package[] = [];
     private readonly indexedPackages: { [name: string]: Package } = {};

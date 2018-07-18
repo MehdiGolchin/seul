@@ -2,14 +2,20 @@
 
 [![Build Status](https://circleci.com/gh/MehdiGolchin/seul.png?style=shield)](https://circleci.com/gh/MehdiGolchin/seul) [![Coverage Status](https://coveralls.io/repos/github/MehdiGolchin/seul/badge.svg?branch=master)](https://coveralls.io/github/MehdiGolchin/seul?branch=master) [![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)](https://github.com/MehdiGolchin/seul/blob/master/LICENSE)
 
-Seul is a simple Task Runner for your monorepos. It is a French word that means *alone*.
+Seul is a simple Task Runner for monorepos. It doesn't need lots of configuration, and you can install and learn it in less than five minutes.
+
+### But What Is a Monorepo?
+To understand what a monorepo is, Imagine you are working on a large-scale project which consists of tons of components. You might choose to have a new repository for each one because in this manner you divide your project into smaller chunks which means fast cloning, better access control, and tidier workspace. However, it also means you're going to have a hard time with debugging your dependencies and managing lots of repositories.
+
+Well, dividing a big project into smaller modules is inevitable, although you can keep the related components in a mono repository. A monorepo is merely a repository that contains some associated projects.
+
+### What Is Seul?
+In contrast to the straightforward concept of monorepo, creating and managing a monorepo is not an easy task for JavaScript developers.
 
 ### Install
-
-Seul has not yet been released. But if you are curious about that, please follow the [Clone & Build section](#clone--build).
+Seul has not yet been released. But you can build & use it on your computer, please follow the [Clone & Build section](#clone--build) section.
 
 ### Create a Monorepo
-
 A monorepo has a straightforward structure. In fact, all you need is a packages directory. As its name implies it contains all of your node modules.
 
 ```shell

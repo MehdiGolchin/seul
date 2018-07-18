@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 
-export interface Log {
+export default interface Log {
     write(message: string): void;
     error(message: string): void;
     table(data: any[]): void;

@@ -1,8 +1,8 @@
-import * as Constants from "../src/constants";
+import * as constants from "../src/constants";
 import { DefaultScriptRunner } from "../src/script-runner";
 import { DefaultServiceProvider } from "../src/service";
-import { DummyRepository } from "./dummy-repository";
-import { DummyScriptParser } from "./dummy-script-parser";
+import DummyRepository from "./dummy-repository";
+import DummyScriptParser from "./dummy-script-parser";
 
 describe("ScriptRunner", () => {
 
@@ -14,7 +14,7 @@ describe("ScriptRunner", () => {
 
             const pwd = jest.fn();
             services
-                .getService<DummyScriptParser>(Constants.ScriptParser)
+                .getService<DummyScriptParser>(constants.scriptParser)
                 .addRule("pwd", pwd);
 
             const executor = new DefaultScriptRunner(services);
@@ -23,7 +23,7 @@ describe("ScriptRunner", () => {
             await executor.exec("pwd");
 
             // assert
-            const repository = services.getService<DummyRepository>(Constants.Repository);
+            const repository = services.getService<DummyRepository>(constants.repository);
             expect(pwd.mock.calls).toEqual([
                 [repository.getPackage("alpha")],
                 [repository.getPackage("beta")],
@@ -36,7 +36,7 @@ describe("ScriptRunner", () => {
 
             const pwd = jest.fn();
             services
-                .getService<DummyScriptParser>(Constants.ScriptParser)
+                .getService<DummyScriptParser>(constants.scriptParser)
                 .addRule("pwd", pwd);
 
             const executor = new DefaultScriptRunner(services);
@@ -47,7 +47,7 @@ describe("ScriptRunner", () => {
             });
 
             // assert
-            const repository = services.getService<DummyRepository>(Constants.Repository);
+            const repository = services.getService<DummyRepository>(constants.repository);
             expect(pwd).toHaveBeenCalledTimes(1);
             expect(pwd).toHaveBeenCalledWith(repository.getPackage("beta"));
         });
@@ -71,11 +71,11 @@ describe("ScriptRunner", () => {
 
         function setupServices() {
             return new DefaultServiceProvider()
-                .addFactory(Constants.Repository, (sp) => new DummyRepository(sp, "/repo")
+                .addFactory(constants.repository, (sp) => new DummyRepository(sp, "/repo")
                     .addPackage("alpha", "1.0.0")
                     .addPackage("beta", "1.0.0")
                 )
-                .addType(Constants.ScriptParser, DummyScriptParser);
+                .addType(constants.scriptParser, DummyScriptParser);
         }
 
     });

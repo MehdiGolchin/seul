@@ -1,4 +1,4 @@
-import { ServiceProvider } from "./service";
+import ServiceProvider from "./service";
 
 export interface RunCommandOptions {
     readonly services: ServiceProvider;

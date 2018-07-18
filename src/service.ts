@@ -1,4 +1,4 @@
-export interface ServiceProvider {
+export default interface ServiceProvider {
     addFactory<T>(name: string, factory: (service: ServiceProvider) => T): ServiceProvider;
     addType<T>(name: string, type: new (services: ServiceProvider) => T): ServiceProvider;
     addInstance<T>(name: string, service: T): ServiceProvider;

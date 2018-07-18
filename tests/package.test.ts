@@ -2,7 +2,7 @@ jest.mock("fs");
 // tslint:disable-next-line:no-var-requires
 const fs = require("fs");
 
-import { Package } from "../src/package";
+import Package from "../src/package";
 
 describe("Package", () => {
 

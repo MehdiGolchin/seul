@@ -6,7 +6,7 @@ export interface PackageDescriptor {
     readonly version: string;
 }
 
-export class Package {
+export default class Package {
 
     constructor(readonly root: string) { }
 

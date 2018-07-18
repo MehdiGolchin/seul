@@ -12,6 +12,5 @@ module.exports = {
     "node"
   ],
   "collectCoverage": true,
-  "automock": false,
   "clearMocks": true
 };

@@ -3,10 +3,10 @@ jest.mock("child_process");
 // tslint:disable-next-line:no-var-requires
 const cp = require("child_process");
 
-import { CommandScript } from "../src/command-script";
-import * as Constants from "../src/constants";
+import CommandScript from "../src/command-script";
+import * as constants from "../src/constants";
 import { InMemoryLog } from "../src/log";
-import { Package } from "../src/package";
+import Package from "../src/package";
 import { DefaultServiceProvider } from "../src/service";
 
 describe("CommandScript", () => {
@@ -16,7 +16,7 @@ describe("CommandScript", () => {
         test("should throw exception when command is empty", async () => {
             // arrange
             const services = new DefaultServiceProvider()
-                .addType(Constants.Log, InMemoryLog);
+                .addType(constants.log, InMemoryLog);
 
             const commandScript = new CommandScript(services, "");
             const currentPackage = new Package("/repo/packages/mypkg");
@@ -41,7 +41,7 @@ describe("CommandScript", () => {
             });
 
             const services = new DefaultServiceProvider()
-                .addType(Constants.Log, InMemoryLog);
+                .addType(constants.log, InMemoryLog);
 
             const packagePath = "/repo/packages/mypkg";
 
@@ -52,7 +52,7 @@ describe("CommandScript", () => {
             await pwd.exec(currentPackage);
 
             // assert
-            const log = services.getService<InMemoryLog>(Constants.Log);
+            const log = services.getService<InMemoryLog>(constants.log);
             expect(log.info).toEqual([packagePath]);
         });
 
@@ -66,7 +66,7 @@ describe("CommandScript", () => {
             });
 
             const services = new DefaultServiceProvider()
-                .addType(Constants.Log, InMemoryLog);
+                .addType(constants.log, InMemoryLog);
 
             const commandScript = new CommandScript(services, "foo");
             const currentPackage = new Package("/repo/packages/mypkg");
@@ -75,7 +75,7 @@ describe("CommandScript", () => {
             await commandScript.exec(currentPackage);
 
             // assert
-            const log = services.getService<InMemoryLog>(Constants.Log);
+            const log = services.getService<InMemoryLog>(constants.log);
             expect(log.errors).toEqual([error]);
         });
 
@@ -87,7 +87,7 @@ describe("CommandScript", () => {
             });
 
             const services = new DefaultServiceProvider()
-                .addType(Constants.Log, InMemoryLog);
+                .addType(constants.log, InMemoryLog);
 
             const packagePath = "/repo/packages/mypkg";
 
@@ -98,7 +98,7 @@ describe("CommandScript", () => {
             await env.exec(currentPackage);
 
             // assert
-            const log = services.getService<InMemoryLog>(Constants.Log);
+            const log = services.getService<InMemoryLog>(constants.log);
             expect(log.info.shift()).toContain(`${packagePath}/node_modules/.bin`);
         });
 
@@ -110,7 +110,7 @@ describe("CommandScript", () => {
             });
 
             const services = new DefaultServiceProvider()
-                .addType(Constants.Log, InMemoryLog);
+                .addType(constants.log, InMemoryLog);
 
             const pwd = new CommandScript(services, "foo -h");
             const currentPackage = new Package("/repo/packages/mypkg");
@@ -119,7 +119,7 @@ describe("CommandScript", () => {
             await pwd.exec(currentPackage);
 
             // assert
-            const log = services.getService<InMemoryLog>(Constants.Log);
+            const log = services.getService<InMemoryLog>(constants.log);
             expect(log.info).toEqual(["-h"]);
         });
 
@@ -128,7 +128,7 @@ describe("CommandScript", () => {
             cp.__registerCommand("foo", () => 1);
 
             const services = new DefaultServiceProvider()
-                .addType(Constants.Log, InMemoryLog);
+                .addType(constants.log, InMemoryLog);
 
             const path = "/repo/packages/mypkg";
             const commandScript = new CommandScript(services, "foo");

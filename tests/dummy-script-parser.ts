@@ -1,7 +1,7 @@
-import { Script, ScriptParser } from "../src/script-parser";
-import { ServiceProvider } from "../src/service";
+import ScriptParser, { Script } from "../src/script-parser";
+import ServiceProvider from "../src/service";
 
-export class DummyScriptParser implements ScriptParser {
+export default class DummyScriptParser implements ScriptParser {
 
     private rules: { [command: string]: Script } = {};
 

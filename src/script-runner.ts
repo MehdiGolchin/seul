@@ -1,7 +1,7 @@
-import * as Constants from "./constants";
-import { Repository } from "./repository";
-import { ScriptParser } from "./script-parser";
-import { ServiceProvider } from "./service";
+import * as constants from "./constants";
+import Repository from "./repository";
+import ScriptParser from "./script-parser";
+import ServiceProvider from "./service";
 
 export interface RunScriptOptions {
     readonly packages: string[];
@@ -17,8 +17,8 @@ export class DefaultScriptRunner implements ScriptRunner {
     constructor(readonly services: ServiceProvider) { }
 
     async exec(command: string, options: Partial<RunScriptOptions> = {}): Promise<any> {
-        const scriptParser = this.services.getService<ScriptParser>(Constants.ScriptParser);
-        const repository = this.services.getService<Repository>(Constants.Repository);
+        const scriptParser = this.services.getService<ScriptParser>(constants.scriptParser);
+        const repository = this.services.getService<Repository>(constants.repository);
         const script = await scriptParser.parse(command);
         const packages = await repository.allPackages();
         for (const pkg of packages) {

@@ -1,10 +1,10 @@
-import { CommandScript } from "../src/command-script";
-import { CompositeScript } from "../src/composite-script";
-import * as Constants from "../src/constants";
+import CommandScript from "../src/command-script";
+import CompositeScript from "../src/composite-script";
+import * as constants from "../src/constants";
 import { RepositoryDescriptor } from "../src/repository";
 import { DefaultScriptParser } from "../src/script-parser";
 import { DefaultServiceProvider } from "../src/service";
-import { DummyRepository } from "./dummy-repository";
+import DummyRepository from "./dummy-repository";
 
 describe("ScriptParser", () => {
 
@@ -66,8 +66,30 @@ describe("ScriptParser", () => {
             const script = await scriptParser.parse("build") as CompositeScript;
 
             // assert
+            expect(script.continueOnError).toBeFalsy();
             expect(script.getAt<CommandScript>(0).command).toEqual("rm -rf dist");
             expect(script.getAt<CommandScript>(1).command).toEqual("tsc");
+        });
+
+        test("should set continue on error on", async () => {
+            // arrange
+            const scriptParser = setupParser({
+                continueOnError: ["install"],
+                scripts: {
+                    install: [
+                        "cp ./package.json ./package.json.backup",
+                        "./scripts/remove-local-packages.js",
+                        "rm ./package.json",
+                        "mv ./package.json.backup ./package.json"
+                    ]
+                }
+            });
+
+            // act
+            const script = await scriptParser.parse("install") as CompositeScript;
+
+            // assert
+            expect(script.continueOnError).toBeTruthy();
         });
 
         test("should undrestand a goto", async () => {
@@ -93,7 +115,7 @@ describe("ScriptParser", () => {
         function setupParser(descriptor: Partial<RepositoryDescriptor>) {
             const services = new DefaultServiceProvider()
                 .addFactory(
-                    Constants.Repository,
+                    constants.repository,
                     () => new DummyRepository(services).setOptions(descriptor)
                 );
             return new DefaultScriptParser(services);

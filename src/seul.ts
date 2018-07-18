@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { DefaultCommandExecutor } from "./command";
 import { PackagesCommand, RunCommand } from "./commands";
-import * as Constants from "./constants";
+import * as constants from "./constants";
 import { ConsoleLog } from "./log";
 import { DefaultRepository } from "./repository";
 import { DefaultScriptParser } from "./script-parser";
@@ -15,10 +15,10 @@ const cwd = process.cwd();
 const params = process.argv.slice(2);
 
 const services = new DefaultServiceProvider()
-    .addType(Constants.Log, ConsoleLog)
-    .addFactory(Constants.Repository, (sp) => new DefaultRepository(sp, cwd))
-    .addType(Constants.ScriptParser, DefaultScriptParser)
-    .addType(Constants.ScriptRunner, DefaultScriptRunner);
+    .addType(constants.log, ConsoleLog)
+    .addFactory(constants.repository, (sp) => new DefaultRepository(sp, cwd))
+    .addType(constants.scriptParser, DefaultScriptParser)
+    .addType(constants.scriptRunner, DefaultScriptRunner);
 
 const executor = new DefaultCommandExecutor(
     services,

@@ -1,10 +1,14 @@
-import { Package } from "./package";
+import Package from "./package";
 import { Script } from "./script-parser";
-import { ServiceProvider } from "./service";
+import ServiceProvider from "./service";
 
-export class CompositeScript implements Script {
+export default class CompositeScript implements Script {
 
-    constructor(readonly services: ServiceProvider, readonly scripts: Script[]) { }
+    constructor(
+        readonly services: ServiceProvider,
+        readonly scripts: Script[],
+        readonly continueOnError = false
+    ) { }
 
     getAt<T extends Script>(index: number): T {
         return this.scripts[index] as T;
@@ -12,7 +16,13 @@ export class CompositeScript implements Script {
 
     async exec(currentPackage: Package): Promise<any> {
         for (const script of this.scripts) {
-            await script.exec(currentPackage);
+            try {
+                await script.exec(currentPackage);
+            } catch (ex) {
+                if (!this.continueOnError) {
+                    throw ex;
+                }
+            }
         }
     }
 
