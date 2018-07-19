@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import CommandScript from "./command-script";
 import CompositeScript from "./composite-script";
 import * as constants from "./constants";
@@ -32,9 +31,12 @@ export class DefaultScriptParser implements ScriptParser {
         return this.parseGroup(command, descriptor);
     }
 
-    private parseGroup(command: string, descriptor: RepositoryDescriptor): Script {
+    private parseGroup(command: string, descriptor: RepositoryDescriptor, errorOnNotFound = false): Script {
         const scripts = descriptor.scripts![command];
         if (!scripts) {
+            if (errorOnNotFound) {
+                throw new Error(`'${command}' script not found.`);
+            }
             return new CommandScript(this.services, command);
         }
         return this.parseScripts(command, scripts, descriptor);
@@ -53,7 +55,7 @@ export class DefaultScriptParser implements ScriptParser {
         } else if (scripts.startsWith("@exec")) {
             return new FileScript(this.services, scripts.substr(5).trim());
         } else if (scripts.startsWith("@")) {
-            return this.parseGroup(scripts.substr(1), descriptor);
+            return this.parseGroup(scripts.substr(1), descriptor, true);
         }
         return new CommandScript(this.services, scripts);
     }

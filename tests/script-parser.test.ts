@@ -1,6 +1,7 @@
 import CommandScript from "../src/command-script";
 import CompositeScript from "../src/composite-script";
 import * as constants from "../src/constants";
+import { FileScript } from "../src/file-scripts";
 import { RepositoryDescriptor } from "../src/repository";
 import { DefaultScriptParser } from "../src/script-parser";
 import { DefaultServiceProvider } from "../src/service";
@@ -71,28 +72,61 @@ describe("ScriptParser", () => {
             expect(script.getAt<CommandScript>(1).command).toEqual("tsc");
         });
 
-        test("should set continue on error on", async () => {
+        test("should return a file command script", async () => {
             // arrange
             const scriptParser = setupParser({
-                continueOnError: ["install"],
                 scripts: {
-                    install: [
-                        "cp ./package.json ./package.json.backup",
-                        "./scripts/remove-local-packages.js",
-                        "rm ./package.json",
-                        "mv ./package.json.backup ./package.json"
+                    build: "@exec ./build.js"
+                }
+            });
+
+            // act
+            const script = await scriptParser.parse("build") as FileScript;
+
+            // assert
+            expect(script.filename).toEqual("./build.js");
+        });
+
+        test("should execute exec as a simple command", async () => {
+            // arrange
+            const scriptParser = setupParser({
+                scripts: {
+                    build: "@exec"
+                }
+            });
+
+            // act
+            let error: Error | null = null;
+            try {
+                await scriptParser.parse("build");
+            } catch (ex) {
+                error = ex;
+            }
+
+            // assert
+            expect(error.message).toEqual("'@exec' takes a script filename.");
+        });
+
+        test("should set continue on error to true", async () => {
+            // arrange
+            const scriptParser = setupParser({
+                continueOnError: ["build"],
+                scripts: {
+                    build: [
+                        "rm -rf dist",
+                        "tsc"
                     ]
                 }
             });
 
             // act
-            const script = await scriptParser.parse("install") as CompositeScript;
+            const script = await scriptParser.parse("build") as CompositeScript;
 
             // assert
             expect(script.continueOnError).toBeTruthy();
         });
 
-        test("should undrestand a goto", async () => {
+        test("should link build to clean", async () => {
             // arrange
             const scriptParser = setupParser({
                 scripts: {
@@ -110,6 +144,29 @@ describe("ScriptParser", () => {
             // assert
             expect(script.getAt<CommandScript>(0).command).toEqual("rm -rf dist");
             expect(script.getAt<CommandScript>(1).command).toEqual("tsc");
+        });
+
+        test("should throw error when script does not exist", async () => {
+            // arrange
+            const scriptParser = setupParser({
+                scripts: {
+                    build: [
+                        "@clean",
+                        "tsc"
+                    ]
+                }
+            });
+
+            // act
+            let error: Error | null = null;
+            try {
+                await scriptParser.parse("build");
+            } catch (ex) {
+                error = ex;
+            }
+
+            // assert
+            expect(error.message).toEqual("'clean' script not found.");
         });
 
         function setupParser(descriptor: Partial<RepositoryDescriptor>) {

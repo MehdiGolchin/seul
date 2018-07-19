@@ -12,8 +12,8 @@ describe("FileScript", () => {
             // arrange
             const services = new DefaultServiceProvider()
                 .addType(constants.log, InMemoryLog);
-            const file = new FileScript(services, "../tests/scripts/hello.js");
-            const currentPackage = new Package("/myrepo/packages/mypkg");
+            const file = new FileScript(services, "./tests/scripts/hello.js");
+            const currentPackage = new Package(process.cwd());
 
             // act
             await file.exec(currentPackage);
